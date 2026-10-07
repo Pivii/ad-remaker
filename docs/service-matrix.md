@@ -10,16 +10,22 @@ This document tracks expected capabilities without conflating the presence of a 
 - `verified`: a real, non-destructive call succeeded.
 - `blocked`: a dependency or authentication issue prevents use.
 
-## Initial state
+## Current state
 
-- Business workflow `winning-ad-remake-workflow`: awaiting source.
-- Brandsearch: Skill awaiting source, MCP not configured.
-- TrendTrack: Skill awaiting source, MCP not configured.
-- Higgsfield: Skill awaiting source, MCP not configured.
-- Kie.ai: Skill awaiting source, MCP not configured.
-- Pika: Skill awaiting source, MCP not configured.
-- fal.ai: Skill awaiting source, MCP not configured.
-- Meta Ads: no integrated Skill or connection.
+Last reviewed on October 7, 2026. Each provider Skill is the Hermes adaptation of the supplied vendor source, kept in `references/upstream.md`.
+
+| Service | Skill | MCP |
+|---|---|---|
+| Business workflow `winning-ad-remake-workflow` | present, pending audit | not applicable |
+| Brandsearch | present, pending audit | not configured |
+| TrendTrack | present, pending audit | not configured |
+| Higgsfield | present, pending audit | not configured |
+| Kie.ai | present, pending audit | not configured |
+| Pika | present, pending audit | not configured |
+| fal.ai | present, pending audit | not configured |
+| Meta Ads | absent | not configured |
+
+No service is `configured` or `verified`. With no MCP configured, the agent can only use native tools and free public sources.
 
 The statuses in the source report are historical and specific to the environment observed when it was written. They are not presented as the current state of this profile.
 
