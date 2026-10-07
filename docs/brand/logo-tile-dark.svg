@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 120 120" role="img" aria-label="Ad Remaker">
+  <title>Ad Remaker app tile, dark</title>
+  <rect x="0" y="0" width="120" height="120" rx="28" fill="#121212"/>
+  <g transform="translate(60 60) scale(0.74) translate(-60 -60)">
+    <rect x="13" y="37" width="46" height="46" rx="9" fill="#8B5CF6"/>
+    <rect x="26" y="32" width="46" height="56" rx="10" fill="#FF7A1A"/>
+    <rect x="39" y="27" width="46" height="66" rx="11" fill="#C6F432"/>
+    <rect x="52" y="22" width="56" height="76" rx="13" fill="#0866FF"/>
+    <g fill="#FFFFFF">
+      <rect x="58" y="30" width="12.5" height="3.5" rx="1.75"/>
+      <rect x="73.5" y="30" width="12.5" height="3.5" rx="1.75" opacity="0.45"/>
+      <rect x="89" y="30" width="12.5" height="3.5" rx="1.75" opacity="0.45"/>
+      <rect x="58" y="80" width="44" height="11" rx="5.5"/>
+    </g>
+  </g>
+</svg>
