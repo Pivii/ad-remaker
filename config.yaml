@@ -1,0 +1,8 @@
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true

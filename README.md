@@ -1,27 +1,44 @@
 # Ad Remaker
 
-Dépôt de travail privé pour concevoir un agent et un profil Hermes spécialisés dans l’analyse et l’adaptation de concepts publicitaires performants.
+Private working repository for an installable Hermes profile specialized in analyzing and adapting effective advertising concepts.
 
-## État
+## Status
 
-Le dépôt est initialisé à partir du rapport de fonctionnement fourni le 7 octobre 2026. Il documente l’architecture cible, le workflow métier, les garde-fous, les intégrations envisagées et leur état au moment du rapport.
+The repository was initialized from the operating report provided on October 7, 2026. That report documents the target architecture, business workflow, safeguards, proposed integrations, and their status at the time of observation. Historical availability statements in the report are not evidence of current tool or MCP availability.
 
-Les Skills mentionnées dans le rapport ne sont pas encore intégrées. Elles seront ajoutées et auditées lorsque leurs fichiers sources seront disponibles.
+Provider Skills may be added and audited separately when their source files and provenance are available.
 
-## Principes déjà établis
+## Established principles
 
-- Analyser la mécanique créative sans copier l’annonce à l’identique.
-- Séparer faits observables, estimations, opinions et inconnues.
-- Ne générer aucun contenu payant sans chiffrage et accord explicite.
-- Ne publier, activer ou dépenser aucun budget sans validation humaine distincte.
-- Éliminer toute trace identifiable du concurrent dans le rendu final.
-- Vérifier les livrables avant d’annoncer leur réussite.
+- Analyze creative mechanics without copying an ad exactly.
+- Separate observable facts, estimates, opinions, and unknowns.
+- Do not generate paid content without a cost estimate and explicit approval.
+- Do not publish, activate, schedule, or spend any budget without separate human approval.
+- Remove every identifiable competitor trace from the final deliverable.
+- Verify deliverables before reporting success.
 
-## Structure
+## Repository structure
 
-- `docs/ad-remaker-fonctionnement-complet.md` : rapport source complet, conservé comme document de référence.
-- `skills/README.md` : zone prévue pour inventorier et intégrer les Skills partagées ultérieurement.
+- `distribution.yaml`: profile-distribution manifest.
+- `SOUL.md`: stable identity and non-negotiable safeguards.
+- `config.yaml`: credential-free Hermes defaults.
+- `mcp.json`: declarative MCP configuration. It remains empty until connections are explicitly configured and verified.
+- `cron/jobs.json`: distributed scheduled jobs. It is currently empty.
+- `skills/`: business and provider operating procedures.
+- `docs/ad-remaker-complete-operating-report.md`: complete historical source report, translated into English.
+- `docs/architecture.md`: distribution layering and ownership boundaries.
+- `docs/service-matrix.md`: integration readiness states without unsupported availability claims.
+- `scripts/validate_distribution.py`: local structural and safety validator.
+- `tests/`: acceptance guidance and redistributable fixtures.
 
-## Source du rapport
+## Validation
 
-[Rapport Ad Remaker](https://sucqmcejnrnvcdnrwhld.supabase.co/storage/v1/object/public/published/3695/ad-remaker-fonctionnement/ad-remaker-fonctionnement-complet.md?v=1791399468681)
+Run from any directory:
+
+```bash
+python3 /path/to/ad-remaker/scripts/validate_distribution.py
+```
+
+## Report source
+
+[Ad Remaker report](https://sucqmcejnrnvcdnrwhld.supabase.co/storage/v1/object/public/published/3695/ad-remaker-fonctionnement/ad-remaker-fonctionnement-complet.md?v=1791399468681)
