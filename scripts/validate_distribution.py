@@ -32,6 +32,12 @@ REQUIRED_FILES = (
     "mcp.json",
     "scripts/validate_distribution.py",
     "skills/README.md",
+    "skills/free-fallback-mode/SKILL.md",
+    "skills/free-fallback-mode/scripts/_media.py",
+    "skills/free-fallback-mode/scripts/cut_list.py",
+    "skills/free-fallback-mode/scripts/first_three_seconds_sheet.py",
+    "skills/free-fallback-mode/scripts/frame_sheet.py",
+    "skills/free-fallback-mode/scripts/shot_clips.py",
     "tests/README.md",
     "tests/fixtures/README.md",
 )
