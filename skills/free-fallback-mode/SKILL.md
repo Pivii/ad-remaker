@@ -99,10 +99,10 @@ whisper "<work-dir>/reference.mp4" --model small --output_format srt --output_di
 
 # whisper.cpp (needs a model file the user already has, and 16 kHz mono audio)
 ffmpeg -i "<work-dir>/reference.mp4" -ar 16000 -ac 1 -c:a pcm_s16le "<work-dir>/analysis/audio.wav"
-whisper-cli -m "<model.bin>" -l auto -f "<work-dir>/analysis/audio.wav" -osrt -of "<work-dir>/analysis/transcript"
+whisper-cli -m "<model.bin>" -l <language> -f "<work-dir>/analysis/audio.wav" -osrt -of "<work-dir>/analysis/transcript"
 ```
 
-`faster-whisper` is a Python library without its own command; use it only if it is already installed. If no transcriber is available, read on-screen text from the frame sheets, ask the user for captions, and mark the spoken transcript **unknown**.
+Set `<language>` to the ad's spoken language code (for example `en`); use `auto` only when it is unknown, since detection can fail on short clips. Label the transcript an **estimate** of the spoken words until checked against the audio or the captions. `faster-whisper` is a Python library without its own command; use it only if it is already installed. If no transcriber is available, read on-screen text from the frame sheets, ask the user for captions, and mark the spoken transcript **unknown**.
 
 Then write, linked to the artifacts above: literal notes for every shot in the cut list, the hook in the first three seconds, pacing (shot count, average and shortest shot length from the cut list), text timing, voice notes, and music notes. Voice character, music genre, and tempo are **unknown** unless the transcript, the user, or an available tool establishes them. For a still image, map the composition with percentage-based x/y zones instead.
 
