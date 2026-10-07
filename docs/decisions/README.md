@@ -20,4 +20,7 @@ What was selected.
 Benefits, costs, limits, and any migration work.
 ```
 
-The first accepted decision is documented in `ADR-001-profile-distribution.md`.
+Accepted decisions:
+
+- `ADR-001-profile-distribution.md`: distribute Ad Remaker as a Hermes profile.
+- `ADR-002-provider-skill-layers.md`: keep provider policy local and install pinned official vendor Skills.
