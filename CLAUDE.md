@@ -45,3 +45,17 @@ python3 scripts/validate_distribution.py
 ```
 
 PyYAML is optional; the validator falls back to a minimal parser without it. For release testing, also install the profile locally with `hermes profile install` and confirm it loads.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on `Pivii/ad-remaker`, managed with the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `CONTEXT.md` plus ADRs in `docs/decisions/`. See `docs/agents/domain.md`.
