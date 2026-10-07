@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -29,10 +30,10 @@ REQUIRED_FILES = (
     "docs/decisions/ADR-001-profile-distribution.md",
     "docs/decisions/README.md",
     "docs/service-matrix.md",
-    "mcp.json",
     "scripts/validate_distribution.py",
     "skills/README.md",
     "tests/README.md",
+    "tests/check_mcp_fixtures.py",
     "tests/fixtures/README.md",
 )
 
@@ -75,6 +76,21 @@ FORBIDDEN_ROOT_DIRS = {
 }
 IGNORED_DIRS = {".git", ".pytest_cache", "__pycache__"}
 
+# Hermes reads MCP servers from config.yaml `mcp_servers`. Values under these
+# keys must be `${ENV_VAR}` placeholders (optionally prefixed by "Bearer ").
+SENSITIVE_KEY = re.compile(r"(authorization|token|secret|password|passwd|cookie|api[_-]?key|apikey)", re.IGNORECASE)
+PLACEHOLDER = re.compile(r"\$\{([^}]+)\}")
+# Hermes resolves these Cursor-style context variables itself; they are not env vars.
+CONTEXT_PLACEHOLDERS = {"userHome", "workspaceFolder", "workspaceFolderBasename", "pathSeparator", "/"}
+TOKEN_SHAPE = re.compile(
+    r"(\bBearer\s+(?!\$\{)\S+"
+    r"|\b(?:sk|pk|rk)[-_][A-Za-z0-9_-]{8,}"
+    r"|\bdk_[A-Za-z0-9_-]{8,}"
+    r"|\bgh[pousr]_[A-Za-z0-9]{20,}"
+    r"|\bEAA[A-Za-z0-9]{20,}"
+    r"|\bAKIA[0-9A-Z]{16})"
+)
+
 
 def fail(errors: list[str], message: str) -> None:
     errors.append(message)
@@ -89,32 +105,101 @@ def load_json(relative_path: str, errors: list[str]) -> Any:
         return None
 
 
+def fallback_scalar(raw_value: str) -> Any:
+    value = raw_value.strip()
+    if value[:1] in {"'", '"'}:
+        quote = value[0]
+        closing = value.find(quote, 1)
+        return value[1:closing] if closing > 0 else value[1:]
+    value = re.sub(r"\s+#.*$", "", value)
+    if value == "[]":
+        return []
+    if value == "{}":
+        return {}
+    if value.lower() in {"true", "false"}:
+        return value.lower() == "true"
+    if value.lower() in {"", "~", "null"}:
+        return None
+    if re.fullmatch(r"-?[0-9]+", value):
+        return int(value)
+    return value
+
+
 def fallback_yaml_mapping(text: str, relative_path: str, errors: list[str]) -> dict[str, Any] | None:
-    """Parse the top-level mapping needed for dependency-free shape checks."""
-    result: dict[str, Any] = {}
+    """Parse the block-style YAML subset used by this distribution, without PyYAML.
+
+    Supports nested mappings, lists of scalars or mappings, quoted and plain
+    scalars, and comments. Flow collections other than `[]` and `{}` are not
+    supported.
+    """
+    lines: list[tuple[int, str, int]] = []
     for line_number, raw_line in enumerate(text.splitlines(), start=1):
         if not raw_line.strip() or raw_line.lstrip().startswith("#"):
             continue
-        if raw_line[0].isspace():
-            continue
-        match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$", raw_line)
-        if not match:
-            fail(errors, f"{relative_path}:{line_number}: unsupported or invalid top-level YAML")
-            return None
-        key, raw_value = match.groups()
-        raw_value = (raw_value or "").strip()
-        if not raw_value:
-            value: Any = {}
-        elif raw_value == "[]":
-            value = []
-        elif raw_value == "{}":
-            value = {}
-        elif raw_value.lower() in {"true", "false"}:
-            value = raw_value.lower() == "true"
-        else:
-            value = raw_value.strip("\"'")
-        result[key] = value
-    return result
+        lines.append((len(raw_line) - len(raw_line.lstrip(" ")), raw_line.strip(), line_number))
+
+    class ParseError(Exception):
+        pass
+
+    def parse_block(index: int, indent: int) -> tuple[Any, int]:
+        if lines[index][1].startswith("-"):
+            return parse_list(index, indent)
+        return parse_mapping(index, indent)
+
+    def parse_nested(index: int, indent: int) -> tuple[Any, int]:
+        """Parse the value of a key whose scalar part is empty."""
+        if index < len(lines):
+            next_indent, next_content, _ = lines[index]
+            if next_indent > indent or (next_indent == indent and next_content.startswith("- ")):
+                return parse_block(index, next_indent)
+        return None, index
+
+    def parse_mapping(index: int, indent: int) -> tuple[dict[str, Any], int]:
+        result: dict[str, Any] = {}
+        while index < len(lines) and lines[index][0] == indent and not lines[index][1].startswith("- "):
+            _, content, line_number = lines[index]
+            match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s+(.*))?$", content)
+            if not match:
+                raise ParseError(f"{relative_path}:{line_number}: unsupported or invalid YAML")
+            key, raw_value = match.groups()
+            if raw_value and not raw_value.lstrip().startswith("#"):
+                result[key] = fallback_scalar(raw_value)
+                index += 1
+            else:
+                result[key], index = parse_nested(index + 1, indent)
+        if index < len(lines) and lines[index][0] > indent:
+            raise ParseError(f"{relative_path}:{lines[index][2]}: unexpected indentation")
+        return result, index
+
+    def parse_list(index: int, indent: int) -> tuple[list[Any], int]:
+        result: list[Any] = []
+        while index < len(lines) and lines[index][0] == indent and lines[index][1].startswith("-"):
+            _, content, line_number = lines[index]
+            item = content[1:].lstrip()
+            if not item:
+                value, index = parse_nested(index + 1, indent)
+                result.append(value)
+            elif re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:(\s|$)", item):
+                # A mapping that starts on the dash line: re-anchor it at the key column.
+                item_indent = indent + len(content) - len(item)
+                lines[index] = (item_indent, item, line_number)
+                value, index = parse_mapping(index, item_indent)
+                result.append(value)
+            else:
+                result.append(fallback_scalar(item))
+                index += 1
+        return result, index
+
+    if not lines:
+        return {}
+    try:
+        data, index = parse_block(0, lines[0][0])
+        if index < len(lines):
+            raise ParseError(f"{relative_path}:{lines[index][2]}: unsupported or invalid YAML")
+    except ParseError as exc:
+        fail(errors, str(exc))
+        return None
+    return data
 
 
 def load_yaml_mapping(relative_path: str, errors: list[str]) -> dict[str, Any] | None:
@@ -152,7 +237,57 @@ def validate_required_files(errors: list[str]) -> None:
         fail(errors, f"obsolete French-facing report path must not exist: {FORBIDDEN_REPORT}")
 
 
-def validate_yaml_files(errors: list[str]) -> None:
+def walk_strings(value: Any, path: tuple[str, ...] = ()):
+    if isinstance(value, str):
+        yield path, value
+    elif isinstance(value, dict):
+        for key, child in value.items():
+            yield from walk_strings(child, path + (str(key),))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from walk_strings(child, path + (str(index),))
+
+
+def validate_mcp_servers(config: dict[str, Any], env_names: set[str], label: str, errors: list[str]) -> None:
+    """Every declared server must ship disabled, secret-free, and with declared env vars."""
+    servers = config.get("mcp_servers")
+    if servers is None:
+        return
+    if not isinstance(servers, dict):
+        fail(errors, f"{label}: 'mcp_servers' must be a mapping")
+        return
+
+    for name, server in servers.items():
+        prefix = f"{label}: mcp_servers.{name}"
+        if not isinstance(server, dict):
+            fail(errors, f"{prefix}: must be a mapping")
+            continue
+        url = server.get("url")
+        if "command" not in server and not (isinstance(url, str) and url.startswith("https://")):
+            fail(errors, f"{prefix}: 'url' must be an https:// URL")
+        # Hermes treats a missing or unrecognized value as enabled.
+        if server.get("enabled") is not False:
+            fail(errors, f"{prefix}: 'enabled' must be false; users enable servers in their installed profile")
+
+        for path, value in walk_strings(server):
+            dotted = ".".join(path)
+            if any(SENSITIVE_KEY.search(part) for part in path):
+                literal = PLACEHOLDER.sub("", value).strip()
+                if literal and literal.lower() != "bearer":
+                    fail(errors, f"{prefix}.{dotted}: literal secret; use an ${{ENV_VAR}} placeholder or OAuth")
+                    continue
+            if TOKEN_SHAPE.search(value):
+                fail(errors, f"{prefix}.{dotted}: value looks like a hardcoded token")
+            for reference in PLACEHOLDER.findall(value):
+                reference = reference.strip()
+                if reference.startswith("env:"):
+                    reference = reference[len("env:"):].strip()
+                if reference not in CONTEXT_PLACEHOLDERS and reference not in env_names:
+                    fail(errors, f"{prefix}.{dotted}: ${{{reference}}} is not declared in distribution.yaml env_requires")
+
+
+def validate_yaml_files(errors: list[str], config_path: str = "config.yaml") -> None:
+    env_names: set[str] = set()
     manifest = load_yaml_mapping("distribution.yaml", errors)
     if manifest is not None:
         required = {
@@ -171,24 +306,25 @@ def validate_yaml_files(errors: list[str]) -> None:
                 fail(errors, f"distribution.yaml: {key!r} must be {expected_type.__name__}")
         if manifest.get("name") != "ad-remaker":
             fail(errors, "distribution.yaml: 'name' must be 'ad-remaker'")
+        for entry in manifest.get("env_requires") or []:
+            if not isinstance(entry, dict) or not isinstance(entry.get("name"), str) or not entry["name"].strip():
+                fail(errors, "distribution.yaml: each env_requires entry must be a mapping with a 'name'")
+                continue
+            env_names.add(entry["name"].strip())
+            if entry.get("required") is not False:
+                fail(errors, f"distribution.yaml: env_requires {entry['name']!r} must set 'required: false'")
 
-    config = load_yaml_mapping("config.yaml", errors)
+    config = load_yaml_mapping(config_path, errors)
     if config is not None:
         for key in ("agent", "approvals", "security"):
             if key not in config:
-                fail(errors, f"config.yaml: missing required top-level mapping {key!r}")
+                fail(errors, f"{config_path}: missing required top-level mapping {key!r}")
             elif not isinstance(config[key], dict):
-                fail(errors, f"config.yaml: {key!r} must be a mapping")
+                fail(errors, f"{config_path}: {key!r} must be a mapping")
+        validate_mcp_servers(config, env_names, config_path, errors)
 
 
 def validate_json_files(errors: list[str]) -> None:
-    mcp = load_json("mcp.json", errors)
-    if mcp is not None:
-        if not isinstance(mcp, dict):
-            fail(errors, "mcp.json: top-level value must be an object")
-        elif not isinstance(mcp.get("servers"), dict):
-            fail(errors, "mcp.json: 'servers' must be an object")
-
     jobs = load_json("cron/jobs.json", errors)
     if jobs is not None:
         if not isinstance(jobs, dict):
@@ -281,10 +417,23 @@ def validate_forbidden_files(errors: list[str]) -> None:
             fail(errors, f"forbidden secret/state file: {relative.as_posix()}")
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--config",
+        default="config.yaml",
+        help="validate this file in place of the distribution's config.yaml (used by tests/check_mcp_fixtures.py)",
+    )
+    args = parser.parse_args(argv)
+    config_path = Path(args.config).resolve() if args.config != "config.yaml" else ROOT / "config.yaml"
+    try:
+        config_label = config_path.relative_to(ROOT).as_posix()
+    except ValueError:
+        config_label = str(config_path)
+
     errors: list[str] = []
     validate_required_files(errors)
-    validate_yaml_files(errors)
+    validate_yaml_files(errors, config_label)
     validate_json_files(errors)
     validate_skills(errors)
     validate_forbidden_files(errors)

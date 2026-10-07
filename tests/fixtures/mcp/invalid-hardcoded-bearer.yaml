@@ -1,0 +1,17 @@
+# expect: literal secret
+# Fake value for the validator test. It is not a real credential.
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  example:
+    url: "https://mcp.example.com/mcp"
+    headers:
+      Authorization: "Bearer fixture-not-a-real-token-0000"
+    enabled: false

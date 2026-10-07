@@ -1,0 +1,15 @@
+# expect: looks like a hardcoded token
+# Fake value for the validator test. It is not a real credential.
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  example:
+    url: "https://mcp.example.com/mcp?key=sk-fixture0notreal0000"
+    enabled: false
