@@ -27,16 +27,43 @@ REQUIRED_FILES = (
     "docs/ad-remaker-complete-operating-report.md",
     "docs/architecture.md",
     "docs/decisions/ADR-001-profile-distribution.md",
+    "docs/decisions/ADR-002-provider-skill-layers.md",
     "docs/decisions/README.md",
+    "docs/provenance/README.md",
+    "docs/provenance/brandsearch.md",
+    "docs/provenance/fal.md",
+    "docs/provenance/higgsfield.md",
+    "docs/provenance/kie-ai.md",
+    "docs/provenance/pika.md",
+    "docs/provenance/trendtrack.md",
     "docs/service-matrix.md",
     "mcp.json",
+    "scripts/install_provider_skills.sh",
     "scripts/validate_distribution.py",
     "skills/README.md",
+    "skills/provider-policy/SKILL.md",
+    "skills/providers/SKILL.md",
     "tests/README.md",
     "tests/fixtures/README.md",
 )
 
 FORBIDDEN_REPORT = "docs/ad-remaker-fonctionnement-complet.md"
+
+# Removed by ADR-002; their source texts live in docs/provenance/.
+REMOVED_SKILLS = (
+    "brandsearch-usage",
+    "fal-usage",
+    "higgsfield-usage",
+    "kie-ai-usage",
+    "pika-usage",
+    "trendtrack-usage",
+)
+
+PROVIDER_PINS_FILE = "skills/providers/SKILL.md"
+PROVIDER_PINS_BEGIN = "<!-- provider-pins:begin -->"
+PROVIDER_PINS_END = "<!-- provider-pins:end -->"
+PROVIDER_PINS_HEADER = ["Vendor", "Repository", "Skill path", "Pinned ref", "License", "Checked"]
+PROVIDER_VENDORS = {"brandsearch", "fal", "higgsfield", "kie-ai", "meta-ads", "pika", "trendtrack"}
 FORBIDDEN_FILE_NAMES = {
     ".env",
     "auth.json",
@@ -262,6 +289,60 @@ def validate_skills(errors: list[str]) -> None:
         if metadata.get("name") != skill_dir.name:
             fail(errors, f"{relative_skill}: frontmatter name must match directory name {skill_dir.name!r}")
 
+    for name in REMOVED_SKILLS:
+        if (skills_dir / name).exists():
+            fail(errors, f"skills/{name}: removed by ADR-002; use provider-policy and providers instead")
+
+
+def validate_provider_pins(errors: list[str]) -> None:
+    """Check the pin table that scripts/install_provider_skills.sh reads."""
+    path = ROOT / PROVIDER_PINS_FILE
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        fail(errors, f"{PROVIDER_PINS_FILE}: cannot read pin table: {exc}")
+        return
+    if text.count(PROVIDER_PINS_BEGIN) != 1 or text.count(PROVIDER_PINS_END) != 1:
+        fail(errors, f"{PROVIDER_PINS_FILE}: pin table markers must appear exactly once")
+        return
+    block = text.split(PROVIDER_PINS_BEGIN, 1)[1].split(PROVIDER_PINS_END, 1)[0]
+    table = [line.strip() for line in block.splitlines() if line.strip().startswith("|")]
+    if len(table) < 2 or [cell.strip() for cell in table[0].strip("|").split("|")] != PROVIDER_PINS_HEADER:
+        fail(errors, f"{PROVIDER_PINS_FILE}: pin table header must be {' | '.join(PROVIDER_PINS_HEADER)}")
+        return
+
+    seen: set[str] = set()
+    for line in table[2:]:
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) != len(PROVIDER_PINS_HEADER):
+            fail(errors, f"{PROVIDER_PINS_FILE}: pin row must have {len(PROVIDER_PINS_HEADER)} cells: {line}")
+            continue
+        vendor, repository, skill_path, ref, license_note, checked = cells
+        where = f"{PROVIDER_PINS_FILE}: vendor {vendor!r}"
+        if vendor in seen:
+            fail(errors, f"{where}: duplicate row")
+        seen.add(vendor)
+        if not re.fullmatch(r"[a-z][a-z0-9-]*", vendor):
+            fail(errors, f"{where}: vendor key must be lowercase letters, digits, and hyphens")
+        if ref == "none":
+            if repository != "none" or skill_path != "none":
+                fail(errors, f"{where}: a row without a pin must use 'none' for repository and Skill path")
+        elif re.fullmatch(r"[0-9a-f]{40}", ref):
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+                fail(errors, f"{where}: repository must be owner/name")
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*", skill_path) or ".." in skill_path:
+                fail(errors, f"{where}: Skill path must be a relative path inside the repository")
+        else:
+            fail(errors, f"{where}: pinned ref must be a full 40-character commit SHA or 'none'")
+        if not license_note:
+            fail(errors, f"{where}: license note is required")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", checked) and not (checked == "pending" and ref == "none"):
+            fail(errors, f"{where}: check date must be YYYY-MM-DD ('pending' only for a row without a pin)")
+
+    missing = PROVIDER_VENDORS - seen
+    if missing:
+        fail(errors, f"{PROVIDER_PINS_FILE}: pin table is missing vendors: {', '.join(sorted(missing))}")
+
 
 def validate_forbidden_files(errors: list[str]) -> None:
     for path in ROOT.rglob("*"):
@@ -287,6 +368,7 @@ def main() -> int:
     validate_yaml_files(errors)
     validate_json_files(errors)
     validate_skills(errors)
+    validate_provider_pins(errors)
     validate_forbidden_files(errors)
 
     if errors:

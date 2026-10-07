@@ -8,12 +8,23 @@ Tests must verify the distribution before each stable release.
 - `distribution.yaml`, `config.yaml`, `mcp.json`, and `cron/jobs.json` have valid syntax and expected shapes;
 - secret files and local runtime state are absent;
 - added Skills have valid frontmatter and structure;
-- the English-facing operating report exists and the old French-facing path does not;
+- the removed `*-usage` Skills are absent and their source texts exist in `docs/provenance/`;
+- the pin table in `skills/providers/SKILL.md` is well formed: known vendors, a 40-character commit or `none` per row, a license note, and a check date;
+- the English-facing operating report exists and the old French-facing path does not.
 
 Run:
 
 ```bash
 python3 scripts/validate_distribution.py
+```
+
+Check the provider install script without installing anything:
+
+```bash
+bash -n scripts/install_provider_skills.sh
+scripts/install_provider_skills.sh --dry-run higgsfield pika fal   # prints the pinned commands, exit 0
+scripts/install_provider_skills.sh --dry-run kie-ai                 # no pin, exit 3
+scripts/install_provider_skills.sh --dry-run acme                   # unknown vendor, exit 2
 ```
 
 Future business acceptance tests must use redistributable fixtures without sensitive data or competitor assets redistributed without authorization.
