@@ -14,4 +14,4 @@ This repository contains seven integrated Hermes Skills:
 
 Each skill keeps the supplied source document verbatim at `references/upstream.md` and links to it from `SKILL.md`. The operational `SKILL.md` is an English Hermes adaptation: it removes installation-state wording, makes service behavior conditional on current tool availability and authentication, and treats upstream service counts, connections, schemas, pricing, and capabilities as historical guidance until verified.
 
-No credentials or MCP configuration are included. Paid generation requires explicit approval under the workflow’s cost controls.
+No credentials are included. The official vendor MCP servers are declared, disabled, in the profile `config.yaml`. Paid generation requires explicit approval under the workflow’s cost controls.

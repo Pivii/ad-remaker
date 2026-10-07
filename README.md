@@ -21,8 +21,7 @@ Provider Skills may be added and audited separately when their source files and 
 
 - `distribution.yaml`: profile-distribution manifest.
 - `SOUL.md`: stable identity and non-negotiable safeguards.
-- `config.yaml`: credential-free Hermes defaults.
-- `mcp.json`: declarative MCP configuration. It remains empty until connections are explicitly configured and verified.
+- `config.yaml`: credential-free Hermes defaults, including the official vendor MCP servers under `mcp_servers`. Every server ships disabled; see `docs/architecture.md` to enable one.
 - `cron/jobs.json`: distributed scheduled jobs. It is currently empty.
 - `skills/`: business and provider operating procedures.
 - `docs/ad-remaker-complete-operating-report.md`: complete historical source report, translated into English.

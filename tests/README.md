@@ -5,7 +5,8 @@ Tests must verify the distribution before each stable release.
 ## Current checks
 
 - required files are present;
-- `distribution.yaml`, `config.yaml`, `mcp.json`, and `cron/jobs.json` have valid syntax and expected shapes;
+- `distribution.yaml`, `config.yaml`, and `cron/jobs.json` have valid syntax and expected shapes;
+- every MCP server in `config.yaml` `mcp_servers` has `enabled: false`, contains no literal secret, and only references `${ENV_VAR}` placeholders declared in `distribution.yaml` `env_requires`;
 - secret files and local runtime state are absent;
 - added Skills have valid frontmatter and structure;
 - the English-facing operating report exists and the old French-facing path does not;
@@ -14,7 +15,10 @@ Run:
 
 ```bash
 python3 scripts/validate_distribution.py
+python3 tests/check_mcp_fixtures.py
 ```
+
+`tests/check_mcp_fixtures.py` runs the validator with `--config` against each file in `tests/fixtures/mcp/`, with PyYAML when installed and always with the stdlib fallback parser. Files named `valid-*` must pass; files named `invalid-*` must fail with the error text given on their first line (`# expect: ...`).
 
 Future business acceptance tests must use redistributable fixtures without sensitive data or competitor assets redistributed without authorization.
 
@@ -27,7 +31,7 @@ hermes profile install /path/to/ad-remaker --yes            # first install
 hermes profile install /path/to/ad-remaker --force --yes    # reinstall, user data preserved
 hermes profile show ad-remaker                              # SOUL.md exists, Skills count matches skills/
 hermes -p ad-remaker skills list                            # every Skill is listed and enabled
-hermes -p ad-remaker mcp list                               # matches the declared MCP servers
+hermes -p ad-remaker mcp list                               # lists every server in config.yaml mcp_servers, all disabled
 ```
 
 The installed profile has no model configured. Set one before chatting, for example with `hermes -p ad-remaker model`.
