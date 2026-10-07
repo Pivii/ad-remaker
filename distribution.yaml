@@ -4,4 +4,7 @@ description: "Hermes profile for analyzing and adapting advertising concepts wit
 hermes_requires: ">=0.12.0"
 author: "Pierre (Pivii)"
 license: "Proprietary"
-env_requires: []
+env_requires:
+  - name: META_APP_ID
+    description: "Your own Meta app ID, used as the OAuth client ID of the meta_ads MCP server. Only needed if you enable it."
+    required: false
