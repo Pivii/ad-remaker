@@ -26,9 +26,12 @@ The profile isolates Ad Remaker's configuration, Skills, connections, memory, se
 
 ### Skills
 
-Skills define workflows. The central business Skill must orchestrate research, analysis, adaptation, approvals, production, quality control, and delivery. Service Skills explain the safe use of a specific integration.
+Skills define workflows, in two layers (ADR-002).
 
-A missing Skill must never be simulated. Source files supplied later must retain their provenance, be audited, and be adapted only when necessary.
+- Agent layer, distributed: the central business Skill orchestrates research, analysis, adaptation, approvals, production, quality control, and delivery. `provider-policy` holds the rules shared by every provider call, and `providers` routes each vendor to its official source.
+- Vendor layer, installed per user: official vendor Skills, installed by reference at a pinned commit with `scripts/install_provider_skills.sh` and re-scanned with `hermes skills audit`. They are not copied into the distribution, and `provider-policy` takes precedence over them.
+
+A missing Skill must never be simulated. Source texts keep their provenance: the workflow's in `references/upstream.md`, the vendors' in `docs/provenance/`.
 
 ### MCP
 

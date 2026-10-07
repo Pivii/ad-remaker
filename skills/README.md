@@ -1,17 +1,27 @@
 # Ad Remaker skills
 
-This repository contains seven integrated Hermes Skills:
+Skills are split into two layers, as recorded in `docs/decisions/ADR-002-provider-skill-layers.md`.
 
-- `winning-ad-remake-workflow` — end-to-end evidence, generation approval, quality control, and paused Meta workflow.
-- `brandsearch-usage` — conditional Brandsearch research workflow.
-- `trendtrack-usage` — conditional TrendTrack ecommerce and ad-intelligence workflow.
-- `higgsfield-usage` — conditional Higgsfield media-generation workflow.
-- `kie-ai-usage` — conditional Kie.ai media-generation workflow.
-- `pika-usage` — conditional Pika generation and editing workflow.
-- `fal-usage` — conditional fal.ai generation workflow.
+## Agent layer (this repository)
+
+- `winning-ad-remake-workflow`: end-to-end evidence, generation approval, quality control, and paused Meta workflow.
+- `provider-policy`: the shared rules for every provider call (authentication check, approval before spend, no silent retry or batch expansion, output retention, and the free path when nothing is connected).
+- `providers`: routing directory with each vendor's official source, pinned ref, license, route order, and check date.
+
+## Vendor layer (installed by reference)
+
+Official vendor Skills are not copied into this repository. Each user installs only the vendors they pay for, at the commit pinned in `providers`:
+
+```bash
+scripts/install_provider_skills.sh higgsfield fal
+```
+
+The script runs `hermes skills audit` after installing. Free-mode users install nothing. Run it again after `hermes profile update`, which replaces the profile's `skills/` directory.
 
 ## Provenance policy
 
-Each skill keeps the supplied source document verbatim at `references/upstream.md` and links to it from `SKILL.md`. The operational `SKILL.md` is an English Hermes adaptation: it removes installation-state wording, makes service behavior conditional on current tool availability and authentication, and treats upstream service counts, connections, schemas, pricing, and capabilities as historical guidance until verified.
+`winning-ad-remake-workflow` keeps its supplied source document verbatim at `references/upstream.md` and links to it from `SKILL.md`. Its operational `SKILL.md` is an English Hermes adaptation that treats upstream service counts, connections, schemas, pricing, and capabilities as historical guidance until verified.
 
-No credentials or MCP configuration are included. Paid generation requires explicit approval under the workflow’s cost controls.
+The vendor source texts of the removed `*-usage` Skills are kept verbatim in `docs/provenance/`. They are not loaded by the agent and must not be edited.
+
+No credentials or MCP configuration are included. Paid calls require explicit approval under `provider-policy`.
