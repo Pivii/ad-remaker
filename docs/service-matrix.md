@@ -17,6 +17,7 @@ Last reviewed on October 7, 2026. Each provider Skill is the Hermes adaptation o
 | Service | Skill | MCP |
 |---|---|---|
 | Business workflow `winning-ad-remake-workflow` | present, pending audit | not applicable |
+| Free fallback `free-fallback-mode` (local scripts, no provider) | present, pending audit | not applicable |
 | Brandsearch | present, pending audit | not configured |
 | TrendTrack | present, pending audit | not configured |
 | Higgsfield | present, pending audit | not configured |
@@ -25,7 +26,7 @@ Last reviewed on October 7, 2026. Each provider Skill is the Hermes adaptation o
 | fal.ai | present, pending audit | not configured |
 | Meta Ads | absent | not configured |
 
-No service is `configured` or `verified`. With no MCP configured, the agent can only use native tools and free public sources.
+No service is `configured` or `verified`. With no MCP configured, the agent can only use native tools and free public sources, following `free-fallback-mode`. Its local analysis scripts need `ffmpeg` and PySceneDetect installed on the host; the distribution does not install them.
 
 The statuses in the source report are historical and specific to the environment observed when it was written. They are not presented as the current state of this profile.
 
