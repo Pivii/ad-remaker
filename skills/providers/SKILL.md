@@ -25,7 +25,7 @@ This table is the single source of truth for vendor Skill pins. `scripts/install
 | kie-ai | none | none | none | no | unknown | 2026-10-07 |
 | trendtrack | none | none | none | no | not applicable | 2026-10-07 |
 | brandsearch | none | none | none | no | not applicable | 2026-10-07 |
-| meta-ads | none | none | none | no | not applicable | pending |
+| meta-ads | none | none | none | no | not applicable | 2026-10-08 |
 <!-- provider-pins:end -->
 
 None of the vendor repositories had a release tag on 2026-10-07, so every pin is a commit on the default branch.
@@ -113,4 +113,8 @@ Route order lists the routes a vendor offers, in the order to try them. Use a ro
 
 ### Meta Ads
 
-- Reserved for issue #5, which adds a local `meta-ads-usage` Skill and fills in this entry. Until then, the paused-campaign rules in `winning-ad-remake-workflow` apply.
+- No official Skill (checked on 2026-10-08). The local `meta-ads-usage` Skill holds the Meta rules (paused by default, read-back, separate approval) and links Meta's documentation: [ads MCP server](https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-overview) and [Ads CLI](https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-cli/ads-cli-overview).
+- License: not applicable, nothing is installed from a Skill repository.
+- CLI install, from Meta's Ads CLI get-started page on 2026-10-08, run only with the user's approval: `pip install meta-ads`, then `uv sync`. Python 3.12 or later.
+- Route order for campaigns, ad sets, and ads: MCP (`https://mcp.facebook.com/ads`, declared as `meta_ads` in `config.yaml`), then CLI (`meta`, with `ACCESS_TOKEN` and `AD_ACCOUNT_ID`). Both reach only the user's own ad accounts.
+- Route order for Ad Library research: the MCP tool `ads_library_search`, which reads the public Meta Ad Library, then the Ad Library website as the free path. The tool's limits compared with the Ad Library API are unverified.

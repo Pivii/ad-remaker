@@ -1,6 +1,6 @@
 ---
 name: winning-ad-remake-workflow
-description: Use when researching a winning ad and producing a brand-safe remake with cost approval, evidence labeling, strict QC, and paused Meta safeguards.
+description: Use when researching a winning ad and producing a brand-safe remake with cost approval, evidence labeling, strict QC, and a gated Meta campaign step.
 ---
 
 # Winning-ad remake workflow
@@ -55,10 +55,10 @@ Fail immediately if any competitor name, logo, packaging, product, person, voice
 
 Link every created file, including analysis artifacts, prompts, selected source photos, intermediate renders, finals, and comparison sheets. Offer explicit decisions such as **Approve batch**, **Choose person A**, **Choose person B**, **Request changes**, **Approve final**, and **Stop**.
 
-After final approval, prepare a Meta campaign only if authenticated Meta tools are available; otherwise deliver the manual Meta launch pack described in `free-fallback-mode`. Use a default budget of `20/day` in local currency and name it `competitor · angle · format · date`, unless the user specifies otherwise. Explicitly set every campaign, ad set, and ad to paused. Read back each object with an available Meta status tool and verify it remains paused after creation or edits. Never publish, activate, schedule spend, or spend money without separate explicit approval. If paused status cannot be verified, stop and report it as **unknown**.
+After final approval, prepare a Meta campaign only if authenticated Meta tools are available, following `meta-ads-usage`; otherwise deliver the manual Meta launch pack described in `free-fallback-mode`. Use a default budget of `20/day` in local currency and name it `competitor · angle · format · date`, unless the user specifies otherwise.
 
 Delete locally stored competitor creative files only after the user approves the final remake and confirms the reference is no longer needed. Keep analysis artifacts and user/product assets unless separately requested.
 
-Work is complete only when all requested files are linked, the final passes both score thresholds with zero competitor traces, paid actions have matching approvals, every created Meta object has been re-checked as paused, and confirmed competitor source files have been deleted. When generation ran on the free path, the pack is complete under section 8 of `free-fallback-mode`, and the score thresholds apply once a render exists.
+Work is complete only when all requested files are linked, the final passes both score thresholds with zero competitor traces, paid actions have matching approvals, every created Meta object has passed the read-back in `meta-ads-usage`, and confirmed competitor source files have been deleted. When generation ran on the free path, the pack is complete under section 8 of `free-fallback-mode`, and the score thresholds apply once a render exists.
 
 See the verbatim [upstream source](references/upstream.md) for provenance and the original workflow.

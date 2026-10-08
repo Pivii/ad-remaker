@@ -48,6 +48,7 @@ REQUIRED_FILES = (
     "skills/free-fallback-mode/scripts/first_three_seconds_sheet.py",
     "skills/free-fallback-mode/scripts/frame_sheet.py",
     "skills/free-fallback-mode/scripts/shot_clips.py",
+    "skills/meta-ads-usage/SKILL.md",
     "skills/provider-policy/SKILL.md",
     "skills/providers/SKILL.md",
     "tests/README.md",
