@@ -1,0 +1,20 @@
+# expect: args flag '--api-key' carries a literal secret
+# Fake value for the validator test. It is not a real credential.
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  example:
+    command: "npx"
+    args:
+      - "-y"
+      - "example-mcp-server"
+      - "--api-key"
+      - "abcd1234efgh5678"
+    enabled: false

@@ -1,0 +1,15 @@
+# expect: URL userinfo carries a literal password
+# Fake value for the validator test. It is not a real credential.
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  example:
+    url: "https://user:abcd1234efgh5678@mcp.example.com/mcp"
+    enabled: false

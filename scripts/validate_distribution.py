@@ -9,6 +9,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlsplit
 
 try:
     import yaml  # type: ignore
@@ -80,6 +81,11 @@ IGNORED_DIRS = {".git", ".pytest_cache", "__pycache__"}
 # keys must be `${ENV_VAR}` placeholders (optionally prefixed by "Bearer ").
 SENSITIVE_KEY = re.compile(r"(authorization|token|secret|password|passwd|cookie|api[_-]?key|apikey)", re.IGNORECASE)
 PLACEHOLDER = re.compile(r"\$\{([^}]+)\}")
+# Name segments that make a URL query parameter or command-line flag carry a
+# secret (`?api_key=`, `--auth`, `--key=`), unless the name ends in a segment
+# that describes the secret instead of holding it (`--auth-type`, `--token-file`).
+SECRET_NAME_SEGMENTS = {"auth", "key"}
+NON_SECRET_NAME_SUFFIXES = {"env", "file", "header", "method", "mode", "name", "path", "type", "url", "var"}
 # Hermes resolves these Cursor-style context variables itself; they are not env vars.
 CONTEXT_PLACEHOLDERS = {"userHome", "workspaceFolder", "workspaceFolderBasename", "pathSeparator", "/"}
 TOKEN_SHAPE = re.compile(
@@ -248,6 +254,56 @@ def walk_strings(value: Any, path: tuple[str, ...] = ()):
             yield from walk_strings(child, path + (str(index),))
 
 
+def is_secret_name(name: str) -> bool:
+    segments = [segment for segment in re.split(r"[-_.]", name.lower().lstrip("-")) if segment]
+    if not segments or segments[-1] in NON_SECRET_NAME_SUFFIXES:
+        return False
+    return bool(SENSITIVE_KEY.search(name)) or any(segment in SECRET_NAME_SEGMENTS for segment in segments)
+
+
+def is_literal(value: str) -> bool:
+    """True when the value holds anything besides `${VAR}` placeholders."""
+    return bool(PLACEHOLDER.sub("", value).strip())
+
+
+def url_secret_issues(value: str) -> list[str]:
+    """Literal credentials carried by a URL: userinfo password or secret-named query parameters."""
+    if not re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", value):
+        return []
+    try:
+        parts = urlsplit(value)
+        password = parts.password
+    except ValueError:
+        return []
+    issues = []
+    if password and is_literal(password):
+        issues.append("URL userinfo carries a literal password")
+    for key, query_value in parse_qsl(parts.query, keep_blank_values=True):
+        if is_secret_name(key) and is_literal(query_value):
+            issues.append(f"URL query parameter {key!r} carries a literal secret")
+    return issues
+
+
+def args_secret_issues(args: list[Any]) -> list[str]:
+    """Literal values passed to secret-named flags: `--api-key VALUE` or `--api-key=VALUE`."""
+    issues = []
+    for index, item in enumerate(args):
+        if not isinstance(item, str) or not item.startswith("-"):
+            continue
+        flag, separator, inline_value = item.partition("=")
+        if not is_secret_name(flag):
+            continue
+        if separator:
+            value = inline_value
+        elif index + 1 < len(args) and isinstance(args[index + 1], str) and not args[index + 1].startswith("-"):
+            value = args[index + 1]
+        else:
+            continue
+        if is_literal(value):
+            issues.append(f"args flag {flag!r} carries a literal secret")
+    return issues
+
+
 def validate_mcp_servers(config: dict[str, Any], env_names: set[str], label: str, errors: list[str]) -> None:
     """Every declared server must ship disabled, secret-free, and with declared env vars."""
     servers = config.get("mcp_servers")
@@ -269,8 +325,15 @@ def validate_mcp_servers(config: dict[str, Any], env_names: set[str], label: str
         if server.get("enabled") is not False:
             fail(errors, f"{prefix}: 'enabled' must be false; users enable servers in their installed profile")
 
+        args = server.get("args")
+        if isinstance(args, list):
+            for issue in args_secret_issues(args):
+                fail(errors, f"{prefix}.args: {issue}; use an ${{ENV_VAR}} placeholder or OAuth")
+
         for path, value in walk_strings(server):
             dotted = ".".join(path)
+            for issue in url_secret_issues(value):
+                fail(errors, f"{prefix}.{dotted}: {issue}; use an ${{ENV_VAR}} placeholder or OAuth")
             if any(SENSITIVE_KEY.search(part) for part in path):
                 literal = PLACEHOLDER.sub("", value).strip()
                 if literal and literal.lower() != "bearer":
