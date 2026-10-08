@@ -115,7 +115,7 @@ rm -rf "$CLAUDE_CONFIG_DIR"; unset CLAUDE_CONFIG_DIR
 
 ## Optional ffmpeg-skill check (Claude Code only)
 
-On 2026-10-08, issue #13 verified version 2.5.1 at `008333aaf6722083392eb6bd8bd67b59884a2a26` in a scratch Claude Code project outside the distribution. The exact pinned `npx --yes skills add` command in the root `README.md` exited 0. The installed `SKILL.md`, `LICENSE`, scripts, references, and templates (75 files) matched the detached upstream commit byte-for-byte; the project's `skills-lock.json` recorded that exact `ref`. No upstream files or test media were copied into this repository.
+On 2026-10-08, issue #13 verified version 2.5.1 at `008333aaf6722083392eb6bd8bd67b59884a2a26` in a scratch Claude Code project outside the distribution. The exact pinned `npx --yes skills add` command, then in the root `README.md` and now in `docs/claude-code-setup.md`, exited 0. The installed `SKILL.md`, `LICENSE`, scripts, references, and templates (75 files) matched the detached upstream commit byte-for-byte; the project's `skills-lock.json` recorded that exact `ref`. No upstream files or test media were copied into this repository.
 
 The synthetic fixture is four seconds of black followed by white, 320x180 at 30 fps with a 440 Hz mono tone. It contains no customer data or competitor assets. To reproduce the supported smoke checks, use a throwaway project outside the distribution, after reviewing the install command:
 
