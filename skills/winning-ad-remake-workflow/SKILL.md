@@ -5,9 +5,11 @@ description: Use when researching a winning ad and producing a brand-safe remake
 
 # Winning-ad remake workflow
 
+Every call to an external provider follows `provider-policy`. Use `providers` to find a vendor's official source and route order.
+
 ## 1. Select and classify the reference
 
-1. Find the reference through an available authenticated ad-intelligence tool or a relevant public ad library. Never publish or promote the competitor ad.
+1. Find the reference through a connected ad-intelligence provider or a relevant public ad library. Never publish or promote the competitor ad.
 2. Score run length, active status, variants, placements, engagement, repeated creative patterns, and product-audience fit.
 3. Label every material statement as **fact**, **estimate**, **opinion**, or **unknown**:
    - **fact**: directly supported by linked evidence;
@@ -24,7 +26,7 @@ When the required inspection or transcription tools are available, produce and l
 
 Preserve the hook, sequence, framing, pacing, transitions, text timing, and format, while replacing every competitor product, brand element, person, voice, music track, caption, watermark, and metadata trace. Use only supported claims, two to four real product photos, and two clearly different casting options. Never fabricate reviews, testimonials, scarcity, endorsements, results, or capabilities.
 
-Choose models only from the currently available authenticated generation tools and current schemas. Treat model recommendations in the upstream document as historical preferences, not guaranteed current availability.
+Choose models only from a connected generation provider, as `provider-policy` requires. Treat model recommendations in the upstream document as historical preferences, not guaranteed current availability.
 
 ## 4. Obtain approval before cost
 
@@ -36,7 +38,7 @@ Before every paid generation batch, show:
 - estimated total cost and currency;
 - available balance when the service exposes it.
 
-Label uncertain pricing as **estimate** and unavailable pricing or balance as **unknown**. Wait for explicit approval before calling any paid generation tool. Generate only the approved batch. Never spend retries silently; provide a new estimate and obtain new approval.
+Label uncertain pricing as **estimate** and unavailable pricing or balance as **unknown**. Approval, batch limits, and retries follow `provider-policy`.
 
 ## 5. Generate and inspect
 
@@ -47,7 +49,7 @@ Compare source and remake shot by shot. Record brief reasons for both scores and
 - production quality of at least 7/10;
 - zero competitor traces.
 
-Fail immediately if any competitor name, logo, packaging, product, person, voice, music, watermark, caption, metadata, or other trace remains. Any paid revision requires another approved batch.
+Fail immediately if any competitor name, logo, packaging, product, person, voice, music, watermark, caption, metadata, or other trace remains. A paid revision is a new batch under `provider-policy`.
 
 ## 6. Deliver and gate campaign creation
 

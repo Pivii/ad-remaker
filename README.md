@@ -6,7 +6,7 @@ Private working repository for an installable Hermes profile specialized in anal
 
 The repository was initialized from the operating report provided on October 7, 2026. That report documents the target architecture, business workflow, safeguards, proposed integrations, and their status at the time of observation. Historical availability statements in the report are not evidence of current tool or MCP availability.
 
-Provider Skills may be added and audited separately when their source files and provenance are available.
+Provider rules live in the local `provider-policy` Skill. Official vendor Skills are not bundled: each user installs only the vendors they pay for, at a pinned commit, with `scripts/install_provider_skills.sh` (see `docs/decisions/ADR-002-provider-skill-layers.md`).
 
 ## Established principles
 
@@ -24,11 +24,14 @@ Provider Skills may be added and audited separately when their source files and 
 - `config.yaml`: credential-free Hermes defaults.
 - `mcp.json`: declarative MCP configuration. It remains empty until connections are explicitly configured and verified.
 - `cron/jobs.json`: distributed scheduled jobs. It is currently empty.
-- `skills/`: business and provider operating procedures.
+- `skills/`: the business workflow, the shared provider policy, and the `providers` routing directory with its vendor pin table.
 - `docs/ad-remaker-complete-operating-report.md`: complete historical source report, translated into English.
 - `docs/architecture.md`: distribution layering and ownership boundaries.
 - `docs/service-matrix.md`: integration readiness states without unsupported availability claims.
+- `docs/provenance/`: verbatim vendor source texts kept for provenance.
+- `docs/decisions/`: architecture decisions.
 - `scripts/validate_distribution.py`: local structural and safety validator.
+- `scripts/install_provider_skills.sh`: installs pinned official vendor Skills into the profile, then runs `hermes skills audit`.
 - `tests/`: acceptance guidance and redistributable fixtures.
 
 ## Validation
