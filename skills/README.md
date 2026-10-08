@@ -7,6 +7,7 @@ Skills are split into two layers, as recorded in `docs/decisions/ADR-002-provide
 - `winning-ad-remake-workflow`: end-to-end evidence, generation approval, quality control, and paused Meta workflow.
 - `provider-policy`: the shared rules for every provider call (authentication check, approval before spend, no silent retry or batch expansion, output retention, and the free path when nothing is connected).
 - `providers`: routing directory with each vendor's official source, pinned ref, license, route order, and check date.
+- `free-fallback-mode`: no-connection path from free public ad libraries and local analysis scripts to a complete remake pack, without rendering.
 
 ## Vendor layer (installed by reference)
 
@@ -21,6 +22,8 @@ The script runs `hermes skills audit` after installing. On 2026-10-08 only Pika 
 ## Provenance policy
 
 `winning-ad-remake-workflow` keeps its supplied source document verbatim at `references/upstream.md` and links to it from `SKILL.md`. Its operational `SKILL.md` is an English Hermes adaptation that treats upstream service counts, connections, schemas, pricing, and capabilities as historical guidance until verified.
+
+`free-fallback-mode` is locally authored from section 7.2 of the historical report, has no upstream Skill text, and owns deterministic local analysis scripts in its `scripts/` directory.
 
 The vendor source texts of the removed `*-usage` Skills are kept verbatim in `docs/provenance/`. They are not loaded by the agent and must not be edited.
 

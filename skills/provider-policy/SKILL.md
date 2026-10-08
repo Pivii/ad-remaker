@@ -17,7 +17,7 @@ These rules apply to every external provider, whatever the route (MCP tools, CLI
 
 ## 2. When nothing is connected
 
-If no provider is available for a stage, say so explicitly and switch to the free path: native tools, local processing, and free public sources. Never claim a capability that is not connected, such as private metrics, ROAS, or rendering.
+If no provider is available for a stage, say so explicitly and switch to the free path in `free-fallback-mode`: native tools, local processing, and free public sources. A server declared in `config.yaml` with `enabled: false` is not available. Never claim a capability that is not connected, such as private metrics, ROAS, or rendering.
 
 ## 3. Approval before spend
 

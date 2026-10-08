@@ -19,6 +19,7 @@ Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in 
 | Business workflow `winning-ad-remake-workflow` | present, pending audit | not applicable |
 | Shared rules `provider-policy` | present, pending audit | not applicable |
 | Routing directory `providers` | present, pending audit | not applicable |
+| Free fallback `free-fallback-mode` (local scripts, no provider) | present, pending audit | not applicable |
 | Brandsearch | no official Skill; thin entry in `providers` | not declared: a hosted MCP exists, but its endpoint is not public |
 | TrendTrack | no official Skill; `providers` links the official agent guide | configured, disabled by default |
 | Higgsfield | thin entry; official Skill `higgsfield-generate` pinned as a source to read, blocked by the Hermes v0.20.2 skills guard | configured, disabled by default |
@@ -29,7 +30,7 @@ Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in 
 
 A pinned vendor Skill is installed only when a user runs `scripts/install_provider_skills.sh`, and only for rows whose `Install` is `hermes`. An installed Skill is not a connection, and neither is a declared MCP server: see the next paragraph. Pins, licenses, and check dates live in the pin table of `skills/providers/SKILL.md`.
 
-No service is `verified`. `configured` means only that the server is declared in `config.yaml` `mcp_servers` with `enabled: false`; no live connection has been tested. Until a user enables and authenticates a server, the agent can only use native tools and free public sources.
+No service is `verified`. `configured` means only that the server is declared in `config.yaml` `mcp_servers` with `enabled: false`; no live connection has been tested. Until a user enables and authenticates a server, the agent can only use native tools and free public sources, following `free-fallback-mode`. Its local analysis scripts need `ffmpeg` and PySceneDetect installed on the host; the distribution does not install them.
 
 ## Declared MCP servers
 
