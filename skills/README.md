@@ -24,4 +24,4 @@ The script runs `hermes skills audit` after installing. On 2026-10-08 only Pika 
 
 The vendor source texts of the removed `*-usage` Skills are kept verbatim in `docs/provenance/`. They are not loaded by the agent and must not be edited.
 
-No credentials or MCP configuration are included. Paid calls require explicit approval under `provider-policy`.
+No credentials are included. The official vendor MCP servers are declared, disabled, in the profile `config.yaml`. Paid calls require explicit approval under `provider-policy`.

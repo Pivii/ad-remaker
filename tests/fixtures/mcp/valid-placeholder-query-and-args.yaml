@@ -1,0 +1,25 @@
+# expect: pass
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  query_placeholder:
+    url: "https://mcp.example.com/mcp?api_key=${META_APP_ID}"
+    enabled: false
+  args_placeholder:
+    command: "npx"
+    args:
+      - "-y"
+      - "example-mcp-server"
+      - "--api-key"
+      - "${META_APP_ID}"
+      - "--token=${META_APP_ID}"
+      - "--auth-type"
+      - "oauth"
+    enabled: false

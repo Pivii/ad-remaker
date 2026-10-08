@@ -14,8 +14,7 @@ Ad Remaker finds competitor ads that show public performance signals, deconstruc
 |---|---|---|
 | `distribution.yaml` | Profile manifest (name, version, Hermes version) | Hermes |
 | `SOUL.md` | Agent identity and non-negotiable rules | Hermes |
-| `config.yaml` | Credential-free Hermes defaults | Hermes |
-| `mcp.json` | Declared MCP servers, empty until one is verified | Hermes |
+| `config.yaml` | Credential-free Hermes defaults and the declared MCP servers (`mcp_servers`, all `enabled: false`) | Hermes |
 | `cron/jobs.json` | Distributed scheduled jobs, currently none | Hermes |
 | `skills/<name>/SKILL.md` | Operational Skill (YAML frontmatter `name` + `description`) | Agent Skills standard |
 | `skills/winning-ad-remake-workflow/references/upstream.md` | Source workflow text as supplied, kept for provenance | Do not edit |
@@ -43,7 +42,8 @@ Skills are split into two layers (ADR-002).
 ## Rules when changing the distribution
 
 - Never commit secrets, tokens, `.env` files, brand data, customer data, generated media, memories, or sessions. Installation-specific brand data belongs in `local/brands/<brand>/`, which is gitignored.
-- Do not add an MCP server to `mcp.json` or mark a service `verified` in `docs/service-matrix.md` without the evidence listed in that file's update rule.
+- MCP servers are declared in `config.yaml` under `mcp_servers`; Hermes does not read a profile `mcp.json`. Every declared server ships with `enabled: false`, uses OAuth or `${ENV_VAR}` placeholders declared in `distribution.yaml` `env_requires` (`required: false`), and has its official source URL and check date in `docs/service-matrix.md`. Never mark a service `verified` without the evidence listed in that file's update rule.
+- `hermes profile update` preserves an installed `config.yaml` unless `--force-config` is passed, so servers declared later do not reach existing installs automatically.
 - Any new cron job must ship paused and must never trigger spending, publication, or campaign activation.
 - If you add a required file, add it to `REQUIRED_FILES` in `scripts/validate_distribution.py`.
 - Bump `version` in `distribution.yaml` for every release.
@@ -52,6 +52,7 @@ Skills are split into two layers (ADR-002).
 
 ```bash
 python3 scripts/validate_distribution.py
+python3 tests/check_mcp_fixtures.py   # the validator must reject every invalid MCP fixture
 ```
 
 PyYAML is optional; the validator falls back to a minimal parser without it. For release testing, also install the profile locally with `hermes profile install` and confirm it loads.

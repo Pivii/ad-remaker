@@ -1,0 +1,16 @@
+# expect: is not declared in distribution.yaml env_requires
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  example:
+    url: "https://mcp.example.com/mcp"
+    headers:
+      Authorization: "Bearer ${UNDECLARED_FIXTURE_KEY}"
+    enabled: false
