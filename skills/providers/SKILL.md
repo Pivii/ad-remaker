@@ -11,18 +11,21 @@ Every source, license, and route below was checked on the date in the table. Tre
 
 ## Pin table
 
-This table is the single source of truth for vendor Skill pins. `scripts/install_provider_skills.sh` reads it, and `scripts/validate_distribution.py` checks its shape. Keep one row per vendor and no `|` inside cells. `Pinned ref` is a full 40-character commit SHA, or `none` when there is no vendor Skill that can be pinned.
+This table is the single source of truth for vendor Skill pins. `scripts/install_provider_skills.sh` reads it, and `scripts/validate_distribution.py` checks its shape. Keep one row per vendor and no `|` inside cells.
+
+- `Pinned ref` is a full 40-character commit SHA, or `none` when there is no vendor source that can be pinned.
+- `Install` is `hermes` when the script installs the pinned vendor Skill into the profile, or `no` when it refuses. A `no` row with a pin is a thin entry: the pinned commit is the source to read, not something to install.
 
 <!-- provider-pins:begin -->
-| Vendor | Repository | Skill path | Pinned ref | License | Checked |
-|---|---|---|---|---|---|
-| higgsfield | higgsfield-ai/skills | higgsfield-generate | f83af0bc1d937c8119099a11f8ebbf5e6fb99819 | MIT | 2026-10-07 |
-| pika | Pika-Labs/Pika-Plugins | skills/ugc-ads | f27b3ba28a7be7c5f3a74d8fdd54b770f5d8157b | Apache-2.0 | 2026-10-07 |
-| fal | fal-ai-community/skills | skills/genmedia | 9ca850412943251fc9a466c4c29fdaf7a303a3d8 | none declared | 2026-10-07 |
-| kie-ai | none | none | none | unknown | 2026-10-07 |
-| trendtrack | none | none | none | not applicable | 2026-10-07 |
-| brandsearch | none | none | none | not applicable | 2026-10-07 |
-| meta-ads | none | none | none | not applicable | pending |
+| Vendor | Repository | Skill path | Pinned ref | Install | License | Checked |
+|---|---|---|---|---|---|---|
+| higgsfield | higgsfield-ai/skills | higgsfield-generate | f83af0bc1d937c8119099a11f8ebbf5e6fb99819 | no | MIT | 2026-10-08 |
+| pika | Pika-Labs/Pika-Plugins | skills/ugc-ads | f27b3ba28a7be7c5f3a74d8fdd54b770f5d8157b | hermes | Apache-2.0 | 2026-10-07 |
+| fal | fal-ai-community/skills | skills/genmedia | 9ca850412943251fc9a466c4c29fdaf7a303a3d8 | no | none declared | 2026-10-08 |
+| kie-ai | none | none | none | no | unknown | 2026-10-07 |
+| trendtrack | none | none | none | no | not applicable | 2026-10-07 |
+| brandsearch | none | none | none | no | not applicable | 2026-10-07 |
+| meta-ads | none | none | none | no | not applicable | pending |
 <!-- provider-pins:end -->
 
 None of the vendor repositories had a release tag on 2026-10-07, so every pin is a commit on the default branch.
@@ -32,11 +35,11 @@ None of the vendor repositories had a release tag on 2026-10-07, so every pin is
 Install only the vendors you pay for. A user in free mode installs nothing.
 
 ```bash
-scripts/install_provider_skills.sh higgsfield fal          # into the ad-remaker profile
+scripts/install_provider_skills.sh pika                    # into the ad-remaker profile
 scripts/install_provider_skills.sh --dry-run pika          # print the commands only
 ```
 
-The script installs each vendor Skill from its commit-pinned URL, `https://raw.githubusercontent.com/<repository>/<pinned ref>/<skill path>/SKILL.md`, with `hermes -p ad-remaker skills install <url> --yes`, then runs `hermes -p ad-remaker skills audit`. It exits non-zero, before installing anything, if a vendor is unknown or has no pin.
+The script installs each vendor Skill from its commit-pinned URL, `https://raw.githubusercontent.com/<repository>/<pinned ref>/<skill path>/SKILL.md`, with `hermes -p ad-remaker skills install <url> --yes`, then runs `hermes -p ad-remaker skills audit`. It exits non-zero, before installing anything, if a vendor is unknown or its `Install` value is not `hermes`. Only Pika is installable on 2026-10-08.
 
 A commit URL is used because Hermes v0.20.2 resolves `owner/repo/path` identifiers against the default branch and has no ref syntax, while its URL source fetches `SKILL.md` and the support files it references from the same pinned location.
 
@@ -50,15 +53,28 @@ Updating is a deliberate change, never automatic:
 2. Change `Pinned ref`, `License`, and `Checked` in the table, and bump `version` in `distribution.yaml`.
 3. Reinstall with the script, which runs `hermes skills audit`. External Skills run with the agent's permissions, so review the audit before using the Skill.
 
+A thin entry with a pin (Higgsfield, fal.ai) can move back to `Install` `hermes` once the vendor Skill at the new commit passes the Hermes skills guard, for example after the vendor drops `curl | sh` from it. Check with `hermes skills inspect <pinned url>` and a scratch profile install first.
+
+## Why Higgsfield and fal.ai are thin entries
+
+On 2026-10-08, Hermes v0.20.2 could not install either vendor Skill at its pinned commit:
+
+- Higgsfield: the pinned URL fails with "Could not fetch ... from any source", because `higgsfield-generate/SKILL.md` links `assets/audio`, which is a directory, and the URL source fails the whole bundle when a referenced support path is missing. The GitHub identifier form gets further, then the skills guard blocks it with `curl_pipe_shell` and `allowed_tools_field` findings.
+- fal.ai: the skills guard blocks `genmedia` with two `curl_pipe_shell` findings, `SKILL.md` line 117 and `references/full-reference.md` line 10 (`curl https://genmedia.sh/install -fsS | bash`).
+
+A dangerous verdict cannot be overridden: in Hermes v0.20.2, `should_allow_install` blocks it for community and trusted sources alike, `--force` does not apply, and there is no user-configurable trust list. This repository does not copy or patch vendor Skills to get around the guard (ADR-002). Instead, the agent reads the pinned vendor Skill as documentation, and the user installs the vendor CLI with the vendor's own command, under `provider-policy`.
+
 ## Vendors
 
 Route order lists the routes a vendor offers, in the order to try them. Use a route only when it is connected and authenticated, as `provider-policy` requires.
 
 ### Higgsfield
 
-- Official Skill: [`higgsfield-ai/skills`](https://github.com/higgsfield-ai/skills), Skill `higgsfield-generate`, release 0.13.0 at the pinned commit. The repository also holds seven other Skills; install them only by adding a deliberate pin.
+- Thin entry, not installed: see "Why Higgsfield and fal.ai are thin entries". The install script refuses `higgsfield`.
+- Source to read: [`higgsfield-generate/SKILL.md` at the pinned commit](https://github.com/higgsfield-ai/skills/blob/f83af0bc1d937c8119099a11f8ebbf5e6fb99819/higgsfield-generate/SKILL.md) in [`higgsfield-ai/skills`](https://github.com/higgsfield-ai/skills), release 0.13.0. The repository holds seven other Skills.
 - License: MIT, from the repository `LICENSE`.
-- Route order: MCP, then CLI (`@higgsfield/cli` on npm, which `higgsfield-generate` wraps), then REST (`https://api.higgsfield.ai`).
+- CLI install, from `higgsfield-generate/SKILL.md` and `INSTALL.md` at the pinned commit, run only with the user's approval: `curl -fsSL https://raw.githubusercontent.com/higgsfield-ai/cli/main/install.sh | sh`. The installer is fetched from the CLI repository's `main` branch, so it is not pinned.
+- Route order: MCP, then CLI (`higgsfield`, published on npm as `@higgsfield/cli`), then REST (`https://api.higgsfield.ai`).
 
 ### Pika
 
@@ -69,8 +85,10 @@ Route order lists the routes a vendor offers, in the order to try them. Use a ro
 
 ### fal.ai
 
-- Official Skill: [`fal-ai-community/skills`](https://github.com/fal-ai-community/skills), Skill `genmedia`, which drives the `genmedia` CLI ([`fal-ai-community/genmedia-cli`](https://github.com/fal-ai-community/genmedia-cli), MIT).
-- License: none declared. The repository has no root `LICENSE` and GitHub reports no license; only `skills/fal-redesign/` carries an MIT `LICENSE`. The Skill is installed by reference from fal's public repository and never copied into this one.
+- Thin entry, not installed: see "Why Higgsfield and fal.ai are thin entries". The install script refuses `fal`.
+- Source to read: [`skills/genmedia/SKILL.md` at the pinned commit](https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/genmedia/SKILL.md) in [`fal-ai-community/skills`](https://github.com/fal-ai-community/skills). It drives the `genmedia` CLI ([`fal-ai-community/genmedia-cli`](https://github.com/fal-ai-community/genmedia-cli), MIT).
+- License: none declared for the Skills repository; only `skills/fal-redesign/` carries an MIT `LICENSE`. Accepted by the maintainer on 2026-10-08, because nothing from it is copied into this repository.
+- CLI install, from `skills/genmedia/SKILL.md` at the pinned commit, run only with the user's approval: `curl https://genmedia.sh/install -fsS | bash` on Linux and macOS, then `genmedia setup --non-interactive --api-key "$FAL_KEY"`. The installer URL is not pinned.
 - Route order: MCP, then CLI (`genmedia`, `FAL_KEY`), then REST.
 
 ### Kie.ai

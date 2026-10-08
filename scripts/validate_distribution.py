@@ -62,7 +62,8 @@ REMOVED_SKILLS = (
 PROVIDER_PINS_FILE = "skills/providers/SKILL.md"
 PROVIDER_PINS_BEGIN = "<!-- provider-pins:begin -->"
 PROVIDER_PINS_END = "<!-- provider-pins:end -->"
-PROVIDER_PINS_HEADER = ["Vendor", "Repository", "Skill path", "Pinned ref", "License", "Checked"]
+PROVIDER_PINS_HEADER = ["Vendor", "Repository", "Skill path", "Pinned ref", "Install", "License", "Checked"]
+PROVIDER_INSTALL_VALUES = {"hermes", "no"}
 PROVIDER_VENDORS = {"brandsearch", "fal", "higgsfield", "kie-ai", "meta-ads", "pika", "trendtrack"}
 FORBIDDEN_FILE_NAMES = {
     ".env",
@@ -317,7 +318,7 @@ def validate_provider_pins(errors: list[str]) -> None:
         if len(cells) != len(PROVIDER_PINS_HEADER):
             fail(errors, f"{PROVIDER_PINS_FILE}: pin row must have {len(PROVIDER_PINS_HEADER)} cells: {line}")
             continue
-        vendor, repository, skill_path, ref, license_note, checked = cells
+        vendor, repository, skill_path, ref, install, license_note, checked = cells
         where = f"{PROVIDER_PINS_FILE}: vendor {vendor!r}"
         if vendor in seen:
             fail(errors, f"{where}: duplicate row")
@@ -334,6 +335,10 @@ def validate_provider_pins(errors: list[str]) -> None:
                 fail(errors, f"{where}: Skill path must be a relative path inside the repository")
         else:
             fail(errors, f"{where}: pinned ref must be a full 40-character commit SHA or 'none'")
+        if install not in PROVIDER_INSTALL_VALUES:
+            fail(errors, f"{where}: Install must be one of {', '.join(sorted(PROVIDER_INSTALL_VALUES))}")
+        elif install == "hermes" and ref == "none":
+            fail(errors, f"{where}: Install 'hermes' requires a pinned commit")
         if not license_note:
             fail(errors, f"{where}: license note is required")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", checked) and not (checked == "pending" and ref == "none"):

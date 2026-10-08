@@ -22,19 +22,20 @@ Options:
   -h, --help      Show this help.
 
 Exit status: 0 success, 1 install or audit failure, 2 usage error or unknown vendor,
-3 vendor without a pinned vendor Skill. Nothing is installed when the status is 2 or 3.
+3 vendor whose Skill is not installable (Install is not `hermes` in the pin table).
+Nothing is installed when the status is 2 or 3.
 EOF
 }
 
-# Print one "vendor repository path ref" line per row of the pin table.
+# Print one "vendor repository path ref install" line per row of the pin table.
 pin_rows() {
   awk -F'|' '
     /<!-- provider-pins:begin -->/ { inside = 1; next }
     /<!-- provider-pins:end -->/ { inside = 0 }
     inside && /^\|/ {
-      for (i = 2; i <= 5; i++) gsub(/^[ \t]+|[ \t]+$/, "", $i)
+      for (i = 2; i <= 6; i++) gsub(/^[ \t]+|[ \t]+$/, "", $i)
       if ($2 == "Vendor" || $2 ~ /^-+$/) next
-      print $2, $3, $4, $5
+      print $2, $3, $4, $5, $6
     }
   ' "$PINS_FILE"
 }
@@ -81,9 +82,14 @@ for vendor in "${vendors[@]}"; do
     status=2
     continue
   fi
-  read -r _ repo path ref <<<"$row"
+  read -r _ repo path ref install <<<"$row"
+  if [ "$install" != "hermes" ]; then
+    echo "error: vendor '$vendor' is not installable with Hermes. See its entry in skills/providers/SKILL.md." >&2
+    [ "$status" -eq 2 ] || status=3
+    continue
+  fi
   if [ "$repo" = "none" ] || [ "$path" = "none" ] || ! printf '%s' "$ref" | grep -Eq '^[0-9a-f]{40}$'; then
-    echo "error: vendor '$vendor' has no pinned vendor Skill (ref: $ref). See skills/providers/SKILL.md." >&2
+    echo "error: vendor '$vendor' has no valid pin (ref: $ref). See skills/providers/SKILL.md." >&2
     [ "$status" -eq 2 ] || status=3
     continue
   fi
