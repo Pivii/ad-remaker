@@ -44,13 +44,13 @@ Content width 1200 px max, 24 px side gutter. Every row wraps to one column on a
 
 1. **Header and hero, ink background.** Nav: wordmark left; "How it works", "Guardrails", "Try it" and a lime "Install" pill right. Hero, two columns: eyebrow pill `Hermes · Claude Code · Codex`, H1 "Turn ad references into your own creative.", attribution from the section below directly under the H1, lead paragraph from the copy table, primary button "Explore the install options" (accent, anchor `#install`) and ghost button "See the workflow" (anchor `#how`). Right column: the logo mark drawn large (max 480 px square), built from the logo brief geometry so it can animate.
 2. **Stack legend, paper.** Four columns, one per card color: Research (purple), Generation (orange), Runtime (lime), The finished ad (accent). A 20 px swatch plus a title and the description from the copy table.
-3. **How it works, `#how`.** H2 "From an ad reference to your own, in six steps." Six cards (min 300 px), with titles and descriptions from the copy table. Step 04 is the only ink card, with the chip "04 · YOU APPROVE".
+3. **How it works, `#how`.** H2 "From an ad reference to your own, in six steps." Under the H2, the setup lead-in from the copy table. Six cards (min 300 px), with titles and descriptions from the copy table. Step 04 is the only ink card, with the chip "04 · YOU APPROVE".
 4. **Guardrails, `#rules`, ink background.** H2 "It works for you. It never spends for you." Four cards with a lime stroke icon, titled "Never an exact copy", "No invented claims", "Approval before any spend", and "Nothing goes live alone", with descriptions from the copy table. Display the scope note directly below the heading: these rules apply to Ad Remaker's Hermes profile, Claude Code plugin, and Codex plugin.
 5. **Choose a version, `#install`.** H2 "Which version should you choose?". Render the comparison below with four option columns and one row-label column. Preserve the option order: hosted service, Claude Code plugin, Codex plugin, Hermes profile. On phones, allow horizontal table scrolling with visible row labels, or render equivalent labeled cards. Place the hosted-service link and its affiliate disclosure inside this comparison. Follow it with three local installation cards (min 320 px):
    - **Claude Code plugin**, chip "Public access pending", body from the copy table, code block with the two commands in the installation section below.
    - **Codex plugin**, chip "Public access pending", body from the copy table, code block with the two Codex commands in the installation section below.
    - **Hermes profile**, chip "Public access pending", body from the copy table, code block `hermes profile install /path/to/ad-remaker --yes`.
-6. **Try it, `#try`.** H2 "Try it with three prompts." Below it, a platform switcher with three tabs in this order: Claude Code, Codex, Hermes. Render it as an accessible tab list (`role="tablist"`, arrow keys move between tabs); tab buttons use the 999 px radius, the active tab is ink with white text, inactive tabs are paper with a line border. Each tab shows the start line from "Usage prompts for implementation" below in a code block, then three prompt cards (min 300 px, soft surface, 24 px radius): a JetBrains Mono label `01`, `02`, `03`, the prompt title, the prompt in a code block, and the "what to expect" line. In the Codex tab, prefix each prompt with `$ad-remaker:winning-ad-remake-workflow ` exactly as shown below. Close the section with the sentence "Approval questions before any spend or publication are expected behavior." and a text link "More examples in the README" to the repository README.
+6. **Try it, `#try`.** H2 "Try it with three prompts." Below it, a platform switcher with three tabs in this order: Claude Code, Codex, Hermes. Render it as an accessible tab list (`role="tablist"`, arrow keys move between tabs); tab buttons use the 999 px radius, the active tab is ink with white text, inactive tabs are paper with a line border. Each tab shows the start line from "Usage prompts for implementation" below in a code block, followed by the small line "First run: a short setup lets you choose free tools or services you already use. Start it any time with <setup entrypoint>." with that tab's setup entrypoint in JetBrains Mono, then three prompt cards (min 300 px, soft surface, 24 px radius): a JetBrains Mono label `01`, `02`, `03`, the prompt title, the prompt in a code block, and the "what to expect" line. In the Codex tab, prefix each prompt with `$ad-remaker:winning-ad-remake-workflow ` exactly as shown below. Close the section with the sentence "Approval questions before any spend or publication are expected behavior." and a text link "More examples in the README" to the repository README.
 7. **Contribute, `#contribute`, ink background.** H2 "Help build it." Body from the copy table, then two buttons: lime "Read the contributing guide" linking to `CONTRIBUTING.md` on GitHub (`https://github.com/Pivii/ad-remaker/blob/main/CONTRIBUTING.md`) and ghost "Browse open issues" linking to `https://github.com/Pivii/ad-remaker/issues`.
 8. **Footer.** Wordmark and the line "Analyze the mechanics. Rebuild for your product. You approve every spend."
 
@@ -67,6 +67,7 @@ The following locally authored text completes the handoff. Use it literally when
 | Generation description | Turn an approved adaptation into creatives with the tools you connect. |
 | Runtime description | Run the Ad Remaker agent in Hermes, Claude Code, or Codex. |
 | The finished ad description | Receive inspected files and a launch pack for your review. |
+| How it works setup lead-in | On your first task, a short setup lets you choose free tools or services you already use. Free for everything needs no login, and choosing a service never approves spending. |
 | Step 01 title | Select the reference |
 | Step 01 description | Choose an ad from a verifiable source. Public activity alone does not prove profitability. |
 | Step 02 title | Take it apart |
@@ -117,15 +118,15 @@ These commands follow the current [README](../../README.md). Public availability
 
 The Try it section quotes the README's "Usage" section; do not write new prompts here. When the README prompts change, update this table in the same pull request.
 
-| Tab | Start line |
-|---|---|
-| Claude Code | `claude --agent ad-remaker:ad-remaker` |
-| Codex | `codex`, run from your own project folder; start each prompt with `$ad-remaker:winning-ad-remake-workflow` |
-| Hermes | `hermes -p ad-remaker` |
+| Tab | Start line | Setup entrypoint |
+|---|---|---|
+| Claude Code | `claude --agent ad-remaker:ad-remaker` | `/ad-remaker:setup` |
+| Codex | `codex`, run from your own project folder; start each prompt with `$ad-remaker:winning-ad-remake-workflow` | `$ad-remaker:setup` |
+| Hermes | `hermes -p ad-remaker` | `Use your setup Skill to configure Ad Remaker.` |
 
 | Card | Title | Prompt | What to expect |
 |---|---|---|---|
-| 01 | Free first run, no provider connected | `Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.` | The agent reports which stages run on the free path and which tools are missing. |
+| 01 | Free first run, no provider connected | `Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.` | On a first run, the agent offers setup before searching; answer **Free for everything** to save the free path without any login, and it then continues this request. |
 | 02 | Full remake for your brand | `Here is my product page <url>. Find 3 competitor ads with real performance signals and propose a remake adapted to my product. Estimate costs before generating anything.` | Before any paid generation, the agent shows the batch with units, prices, retry margin, total, and currency, and waits for you to approve that exact batch. |
 | 03 | Analyze an ad you already have | `Deconstruct this ad (<file or link>): hook, structure, offer, visual mechanics, and what I can reuse without copying.` | The agent asks before downloading a public video or installing a missing local tool such as `ffmpeg` or `scenedetect`. |
 
