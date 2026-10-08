@@ -71,10 +71,21 @@ local/brands/<brand>/
 └── assets/
 ```
 
+### Claude Code plugin
+
+The repository root is also a Claude Code plugin (ADR-003). It reuses `skills/` unchanged and adds four files:
+
+- `.claude-plugin/plugin.json`: the manifest. Its `version` equals `distribution.yaml`.
+- `.claude-plugin/marketplace.json`: a one-plugin marketplace pointing at the repository root, so the plugin installs with `claude plugin install ad-remaker@ad-remaker`.
+- `agents/ad-remaker.md`: the `ad-remaker` subagent. Its body is `SOUL.md`, written by `scripts/sync_claude_agent.py`.
+- `.mcp.json`: the same vendor servers as `config.yaml` `mcp_servers`, under the same names and URLs.
+
+Claude Code starts a plugin's MCP servers whenever the plugin is enabled; there is no per-server `enabled: false`. Every declared server uses OAuth and stays unauthenticated until the user signs in. Users turn off the vendors they do not pay for in `/mcp` or with `deniedMcpServers` (see `README.md`). `scripts/validate_distribution.py` fails when the subagent body differs from `SOUL.md`, when the two MCP declarations differ, or when the plugin version differs from `distribution.yaml`.
+
 ### Scheduled jobs
 
 The distribution currently provides no scheduled jobs. Any future routine must be shipped paused and must never trigger spending, publication, or campaign activation on its own.
 
 ## File ownership
 
-The distribution owns `SOUL.md`, `config.yaml`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. `config.yaml` is copied on install but preserved on `hermes profile update` unless `--force-config` is passed. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.
+The distribution owns `SOUL.md`, `config.yaml`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. The Claude Code plugin files (`.claude-plugin/`, `agents/`, `.mcp.json`) are derived from them and checked by the validator. `config.yaml` is copied on install but preserved on `hermes profile update` unless `--force-config` is passed. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.

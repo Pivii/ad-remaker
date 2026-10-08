@@ -1,6 +1,6 @@
 ---
 name: winning-ad-remake-workflow
-description: Use when researching a winning ad and producing a brand-safe remake with cost approval, evidence labeling, strict QC, and paused Meta safeguards.
+description: Use when researching a winning ad and producing a brand-safe remake with cost approval, evidence labeling, strict QC, and a gated Meta campaign step.
 ---
 
 # Winning-ad remake workflow
@@ -20,7 +20,7 @@ Every call to an external provider follows `provider-policy`. Use `providers` to
 
 ## 2. Analyze the source
 
-When the required inspection or transcription tools are available, produce and link an exact timestamped cut list, full frame sheet, first-three-second frame sheet, per-shot silent clips, literal shot notes, transcript, pacing notes, voice notes, and music notes. For stills, map composition with percentage-based x/y zones. Mark unavailable evidence as **unknown** rather than inventing it. The scripts of `free-fallback-mode` produce the cut list, both frame sheets, and the silent clips locally in any mode.
+When the required inspection or transcription tools are available, produce and link an exact timestamped cut list, full frame sheet, first-three-second frame sheet, per-shot silent clips, literal shot notes, transcript, pacing notes, voice notes, and music notes. For stills, map composition with percentage-based x/y zones. Mark unavailable evidence as **unknown** rather than inventing it. The scripts of `free-fallback-mode` produce the cut list, both frame sheets, and the silent clips locally in any mode. In Claude Code only, when the pinned ffmpeg-skill is actually installed and the operation's dependencies are available, use its analysis route in `free-fallback-mode` section 4 (`scenes.py`, `look.py`, `cut.py --segments`, optional `caption.py --transcribe`). Otherwise use our distributed scripts and existing transcription path. Do not treat overview sheets or a different scene-report format as the required artifacts; link all evidence and mark gaps **unknown**.
 
 ## 3. Design a clean remake
 
@@ -44,6 +44,8 @@ Label uncertain pricing as **estimate** and unavailable pricing or balance as **
 
 Preserve the real product’s appearance from supplied photos. Reject distorted packaging, unreadable labels, implausible anatomy or motion, identity leakage, or generally unconvincing output.
 
+For an existing remake in Claude Code, the optional installed ffmpeg-skill may finish it locally with `fit.py` 9:16, `caption.py`, `redact.py` for a measured blur region, `render.py --template reels` or `tiktok`, and `check.py`, following the gates and checks in `free-fallback-mode` section 4. Never install it automatically or assume its filters, fonts, or transcription models exist. Our analysis scripts remain the fallback; if finishing is unavailable, report the gap and deliver the pack or existing intermediate. Local encoding does not authorize paid generation or publication.
+
 Compare source and remake shot by shot. Record brief reasons for both scores and require:
 - structural faithfulness of at least 8/10;
 - production quality of at least 7/10;
@@ -55,10 +57,10 @@ Fail immediately if any competitor name, logo, packaging, product, person, voice
 
 Link every created file, including analysis artifacts, prompts, selected source photos, intermediate renders, finals, and comparison sheets. Offer explicit decisions such as **Approve batch**, **Choose person A**, **Choose person B**, **Request changes**, **Approve final**, and **Stop**.
 
-After final approval, prepare a Meta campaign only if authenticated Meta tools are available; otherwise deliver the manual Meta launch pack described in `free-fallback-mode`. Use a default budget of `20/day` in local currency and name it `competitor · angle · format · date`, unless the user specifies otherwise. Explicitly set every campaign, ad set, and ad to paused. Read back each object with an available Meta status tool and verify it remains paused after creation or edits. Never publish, activate, schedule spend, or spend money without separate explicit approval. If paused status cannot be verified, stop and report it as **unknown**.
+After final approval, prepare a Meta campaign only if authenticated Meta tools are available, following `meta-ads-usage`; otherwise deliver the manual Meta launch pack described in `free-fallback-mode`. Use a default budget of `20/day` in local currency and name it `competitor · angle · format · date`, unless the user specifies otherwise.
 
 Delete locally stored competitor creative files only after the user approves the final remake and confirms the reference is no longer needed. Keep analysis artifacts and user/product assets unless separately requested.
 
-Work is complete only when all requested files are linked, the final passes both score thresholds with zero competitor traces, paid actions have matching approvals, every created Meta object has been re-checked as paused, and confirmed competitor source files have been deleted. When generation ran on the free path, the pack is complete under section 8 of `free-fallback-mode`, and the score thresholds apply once a render exists.
+Work is complete only when all requested files are linked, the final passes both score thresholds with zero competitor traces, paid actions have matching approvals, every created Meta object has passed the read-back in `meta-ads-usage`, and confirmed competitor source files have been deleted. When generation ran on the free path, the pack is complete under section 8 of `free-fallback-mode`, and the score thresholds apply once a render exists.
 
 See the verbatim [upstream source](references/upstream.md) for provenance and the original workflow.

@@ -4,7 +4,8 @@ Skills are split into two layers, as recorded in `docs/decisions/ADR-002-provide
 
 ## Agent layer (this repository)
 
-- `winning-ad-remake-workflow`: end-to-end evidence, generation approval, quality control, and paused Meta workflow.
+- `winning-ad-remake-workflow`: end-to-end evidence, generation approval, quality control, and the Meta campaign step.
+- `meta-ads-usage`: Meta's ads MCP server and Ads CLI, with the paused-by-default, read-back, and separate-approval rules for Meta campaigns. Meta publishes no official Skill.
 - `provider-policy`: the shared rules for every provider call (authentication check, approval before spend, no silent retry or batch expansion, output retention, and the free path when nothing is connected).
 - `providers`: routing directory with each vendor's official source, pinned ref, license, route order, and check date.
 - `free-fallback-mode`: no-connection path from free public ad libraries and local analysis scripts to a complete remake pack, without rendering.
@@ -17,7 +18,7 @@ Official vendor Skills are not copied into this repository. Each user installs o
 scripts/install_provider_skills.sh pika
 ```
 
-The script runs `hermes skills audit` after installing. On 2026-10-08 only Pika is installable. Higgsfield and fal.ai are thin entries: the Hermes v0.20.2 skills guard blocks their Skills, so `providers` points to the pinned vendor Skill as a source to read and to the vendor's own CLI install command, which needs the user's approval under `provider-policy`. Free-mode users install nothing. Run it again after `hermes profile update`, which replaces the profile's `skills/` directory.
+The script is for Hermes; for Claude Code, use the pinned commands in the root `README.md`. The script runs `hermes skills audit` after installing. On 2026-10-08 only Pika is installable. Higgsfield and fal.ai are thin entries: the Hermes v0.20.2 skills guard blocks their Skills, so `providers` points to the pinned vendor Skill as a source to read and to the vendor's own CLI install command, which needs the user's approval under `provider-policy`. Free mode needs no vendor Skill. Claude Code users may separately install the optional free community ffmpeg-skill at its pinned commit for local analysis and finishing (ADR-004 and the root `README.md`); it is not bundled or installable in Hermes. Run the Hermes vendor install script again after `hermes profile update`, which replaces the profile's `skills/` directory.
 
 ## Provenance policy
 

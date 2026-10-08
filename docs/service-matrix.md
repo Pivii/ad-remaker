@@ -12,7 +12,7 @@ This document tracks expected capabilities without conflating the presence of a 
 
 ## Current state
 
-Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in ADR-002: local Skills hold the agent rules (`provider-policy`) and the routing directory (`providers`); installable official vendor Skills are installed by reference at a pinned commit and are not part of the distribution. The vendor source texts of the removed `*-usage` Skills are kept in `docs/provenance/`.
+Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in ADR-002: local Skills hold the agent rules (`provider-policy`) and the routing directory (`providers`), and `meta-ads-usage` holds the Meta campaign rules because Meta publishes no official Skill; installable official vendor Skills are installed by reference at a pinned commit and are not part of the distribution. The vendor source texts of the removed `*-usage` Skills are kept in `docs/provenance/`.
 
 | Service | Skill | MCP |
 |---|---|---|
@@ -20,17 +20,18 @@ Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in 
 | Shared rules `provider-policy` | present, pending audit | not applicable |
 | Routing directory `providers` | present, pending audit | not applicable |
 | Free fallback `free-fallback-mode` (local scripts, no provider) | present, pending audit | not applicable |
+| ffmpeg-skill (community local tool) | optional Claude Code-only Skill, pinned MIT source; scratch install and scenes/look verified on 2026-10-08; Hermes v0.20.2 fetch fails, guard verdict unknown (ADR-004) | not declared: optional upstream MCP is not part of this distribution |
 | Brandsearch | no official Skill; thin entry in `providers` | not declared: a hosted MCP exists, but its endpoint is not public |
 | TrendTrack | no official Skill; `providers` links the official agent guide | configured, disabled by default |
 | Higgsfield | thin entry; official Skill `higgsfield-generate` pinned as a source to read, blocked by the Hermes v0.20.2 skills guard | configured, disabled by default |
 | Kie.ai | official Skills exist but cannot be pinned or installed by Hermes v0.20.2 | not declared: no official MCP server |
 | Pika | official Skill `ugc-ads` (Pika-Plugins) pinned and installable with the script; install verified in a scratch profile on 2026-10-08 | configured, disabled by default |
 | fal.ai | thin entry; official Skill `genmedia` pinned as a source to read, blocked by the Hermes v0.20.2 skills guard; repository declares no license (accepted) | configured, disabled by default |
-| Meta Ads | absent; slot reserved in `providers` (#5) | configured, disabled by default |
+| Meta Ads | no official Skill; local Skill `meta-ads-usage` (ads MCP server and Ads CLI) present, pending audit | configured, disabled by default |
 
 A pinned vendor Skill is installed only when a user runs `scripts/install_provider_skills.sh`, and only for rows whose `Install` is `hermes`. An installed Skill is not a connection, and neither is a declared MCP server: see the next paragraph. Pins, licenses, and check dates live in the pin table of `skills/providers/SKILL.md`.
 
-No service is `verified`. `configured` means only that the server is declared in `config.yaml` `mcp_servers` with `enabled: false`; no live connection has been tested. Until a user enables and authenticates a server, the agent can only use native tools and free public sources, following `free-fallback-mode`. Its local analysis scripts need `ffmpeg` and PySceneDetect installed on the host; the distribution does not install them.
+No service is `verified`. `configured` means only that the server is declared in `config.yaml` `mcp_servers` with `enabled: false`, and in the Claude Code plugin's `.mcp.json` under the same name and URL; no live connection has been tested. In Claude Code, a declared server starts when the plugin is enabled but stays unauthenticated until the user signs in (ADR-003). On 2026-10-08, Claude Code 2.1.288 built Meta's authorization URL for `meta_ads` without a pre-registered app ID; the sign-in itself was not tested. Until a user enables and authenticates a server, the agent can only use native tools and free public sources, following `free-fallback-mode`. Its local analysis scripts need `ffmpeg` and PySceneDetect installed on the host; the distribution does not install them.
 
 ## Declared MCP servers
 
