@@ -158,10 +158,12 @@ fi
 # Keep the throwaway profile free-only and non-blocking: no paid auxiliary model
 # fallback, a headless `clarify` question returns at once instead of waiting, and
 # a failed model call (for example HTTP 429) is reported instead of retried after
-# a provider back-off that can last 10 minutes.
+# a provider back-off that can last 10 minutes. Session titles are not generated,
+# which saves one model call per scenario against the provider's rate limit.
 hermes -p "$PROFILE" config set auxiliary.free_only true >"$WORK/config.log" 2>&1 \
   && hermes -p "$PROFILE" config set agent.clarify_timeout 5 >>"$WORK/config.log" 2>&1 \
   && hermes -p "$PROFILE" config set agent.api_max_retries 1 >>"$WORK/config.log" 2>&1 \
+  && hermes -p "$PROFILE" config set auxiliary.title_generation.enabled false >>"$WORK/config.log" 2>&1 \
   || fail "could not configure the throwaway profile (see config.log)"
 
 if hermes -p "$PROFILE" skills list >"$WORK/skills-list.log" 2>&1; then
@@ -250,7 +252,8 @@ run_scenario() {
   wait "$CHAT_PID"
   local code=$?
   CHAT_PID=""
-  if grep -qE 'RateLimitError|status=429' "$dir/chat.log"; then
+  # Only a failed agent turn counts; a rate-limited auxiliary call does not stop the scenario.
+  if grep -qE 'API call failed \(attempt [0-9]+/[0-9]+\): RateLimitError' "$dir/chat.log"; then
     fail "$name: the model provider rate-limited the run (HTTP 429). This is not an agent failure; rerun later."
     return
   fi
