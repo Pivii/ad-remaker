@@ -24,6 +24,7 @@ REQUIRED_FILES = (
     ".gitignore",
     ".mcp.json",
     "AGENTS.md",
+    "LICENSE",
     "README.md",
     "SOUL.md",
     "agents/ad-remaker.md",

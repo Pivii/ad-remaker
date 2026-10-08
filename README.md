@@ -7,13 +7,31 @@
 
 # Ad Remaker
 
-Private working repository for an agent specialized in analyzing and adapting effective advertising concepts. The same files install as a Hermes profile or as a Claude Code plugin (see `docs/decisions/ADR-003-claude-code-plugin.md`).
+Inspiré de l'agent Recreate competitor ads de [Rerun](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4). Si tu veux le même agent sans rien installer ni configurer, utilise directement Rerun.
+
+Adaptation indépendante, non officielle. Selon le mainteneur, l'équipe marketing (Théo) a autorisé la publication open source le 8 octobre 2026, sous réserve d'attribution. Liens affiliés : le mainteneur peut percevoir une commission.
+
+Independent agent project specialized in analyzing and adapting effective advertising concepts. The same files install as a Hermes profile or as a Claude Code plugin (see `docs/decisions/ADR-003-claude-code-plugin.md`).
 
 ## Status
 
 The repository was initialized from the operating report provided on October 7, 2026. That report documents the target architecture, business workflow, safeguards, proposed integrations, and their status at the time of observation. Historical availability statements in the report are not evidence of current tool or MCP availability.
 
 Provider rules live in the local `provider-policy` Skill. Official vendor Skills are not bundled: each user installs only the vendors they pay for, at a pinned commit, with `scripts/install_provider_skills.sh` in Hermes, or with the commands under "Vendor Skills in Claude Code" (see `docs/decisions/ADR-002-provider-skill-layers.md`).
+
+## Quelle version choisir ?
+
+Pour démarrer sans terminal, Rerun est l'option simple. Le plugin et le profil permettent d'utiliser ton environnement existant.
+
+| Critère | [Rerun](https://rerun.build?via=aRLmG4) | Plugin Claude Code | Profil Hermes |
+|---|---|---|---|
+| Public visé | Non-techniques qui veulent un agent prêt à utiliser | Utilisateurs qui utilisent déjà Claude Code | Utilisateurs qui font tourner Hermes |
+| Temps d'installation | Quelques secondes pour ajouter l'agent ; environ 5 min pour la configuration, selon la page du template | Quelques minutes si Claude Code est déjà configuré, puis connexion des services utilisés (estimation) | Quelques minutes si Hermes est déjà configuré, puis choix du modèle et connexion des services utilisés (estimation) |
+| Hébergement | Hébergé, géré par le service | Sur la machine où tu exécutes Claude Code | Sur la machine ou le serveur où tu exécutes Hermes |
+| Coût | Essai gratuit pour démarrer, puis abonnement payant ; coûts des modèles et services selon l'usage | Plugin gratuit (MIT) ; accès Claude Code, modèles et services externes selon tes offres | Profil gratuit (MIT) ; modèles, hébergement éventuel et services externes selon tes offres |
+| Outils externes nécessaires | Higgsfield ou Kie AI (ou un autre générateur) pour la génération ; TrendTrack facultatif pour la recherche ; Meta Ads facultatif pour les brouillons | TrendTrack facultatif ; Higgsfield ou Kie AI (ou un autre générateur connecté) pour la génération ; Meta Ads facultatif ; mode d'analyse local sans générateur | TrendTrack facultatif ; Higgsfield ou Kie AI (ou un autre générateur connecté) pour la génération ; Meta Ads facultatif ; mode d'analyse local sans générateur |
+
+Informations vérifiées le 8 octobre 2026 : [template](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4) et [offre du service](https://rerun.build/pricing?via=aRLmG4). L'essai gratuit nécessite une carte bancaire. L'ajout du template ne connecte pas tes comptes externes. Sans TrendTrack, la recherche peut utiliser les bibliothèques publiques ; sans Meta Ads, la livraison se fait sous forme de fichiers à importer. Les offres et prérequis peuvent évoluer.
 
 ## Install
 
@@ -139,6 +157,10 @@ Run from any directory:
 ```bash
 python3 /path/to/ad-remaker/scripts/validate_distribution.py
 ```
+
+## License
+
+[MIT](LICENSE), copyright 2026 Pierre Viviere. External vendor source material retained for provenance and separately installed vendor Skills remain subject to their own terms; this license does not relicense them.
 
 ## Report source
 
