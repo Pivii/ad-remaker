@@ -20,7 +20,7 @@ Every call to an external provider follows `provider-policy`. Use `providers` to
 
 ## 2. Analyze the source
 
-When the required inspection or transcription tools are available, produce and link an exact timestamped cut list, full frame sheet, first-three-second frame sheet, per-shot silent clips, literal shot notes, transcript, pacing notes, voice notes, and music notes. For stills, map composition with percentage-based x/y zones. Mark unavailable evidence as **unknown** rather than inventing it. The scripts of `free-fallback-mode` produce the cut list, both frame sheets, and the silent clips locally in any mode.
+When the required inspection or transcription tools are available, produce and link an exact timestamped cut list, full frame sheet, first-three-second frame sheet, per-shot silent clips, literal shot notes, transcript, pacing notes, voice notes, and music notes. For stills, map composition with percentage-based x/y zones. Mark unavailable evidence as **unknown** rather than inventing it. The scripts of `free-fallback-mode` produce the cut list, both frame sheets, and the silent clips locally in any mode. In Claude Code only, when the pinned ffmpeg-skill is actually installed and the operation's dependencies are available, use its analysis route in `free-fallback-mode` section 4 (`scenes.py`, `look.py`, `cut.py --segments`, optional `caption.py --transcribe`). Otherwise use our distributed scripts and existing transcription path. Do not treat overview sheets or a different scene-report format as the required artifacts; link all evidence and mark gaps **unknown**.
 
 ## 3. Design a clean remake
 
@@ -43,6 +43,8 @@ Label uncertain pricing as **estimate** and unavailable pricing or balance as **
 ## 5. Generate and inspect
 
 Preserve the real product’s appearance from supplied photos. Reject distorted packaging, unreadable labels, implausible anatomy or motion, identity leakage, or generally unconvincing output.
+
+For an existing remake in Claude Code, the optional installed ffmpeg-skill may finish it locally with `fit.py` 9:16, `caption.py`, `redact.py` for a measured blur region, `render.py --template reels` or `tiktok`, and `check.py`, following the gates and checks in `free-fallback-mode` section 4. Never install it automatically or assume its filters, fonts, or transcription models exist. Our analysis scripts remain the fallback; if finishing is unavailable, report the gap and deliver the pack or existing intermediate. Local encoding does not authorize paid generation or publication.
 
 Compare source and remake shot by shot. Record brief reasons for both scores and require:
 - structural faithfulness of at least 8/10;

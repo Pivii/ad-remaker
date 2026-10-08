@@ -73,6 +73,34 @@ Never bypass a login, paywall, or protection. `yt-dlp` may not support a given l
 
 ## 4. Analyze locally
 
+### Optional Claude Code route: ffmpeg-skill
+
+Use this route only in Claude Code when the community ffmpeg-skill is already installed at the `providers` pin. Hermes always uses our scripts below (ADR-004). Resolve the actual installed `<ffmpeg-skill-dir>` from the session's Skill location; a repository link, pin-table row, or historical test is not an installation. For a project install, check that `skills-lock.json` records the full pinned `ref` for `ffmpeg-skill`; a copied directory alone does not establish its revision. Read its `SKILL.md`, confirm the script exists, and run that script's `--help` before forming a command. Do not install it automatically: the documented pinned project install is in the root `README.md`.
+
+Check Python 3.9 or later, `ffmpeg`, and `ffprobe`, then the filters and encoders required by the requested operation. Probe inputs with the installed `probe.py`; use `--dry-run --json` before an encode. If a dependency is missing or a script fails, report the actual error and use the fallback below for the affected analysis artifact. Run `python3 <ffmpeg-skill-dir>/scripts/_contract.py doctor --json` after a capability failure or when checking the machine on request. Read per-tool `usable` and `missing`: global `ok: false` can still permit scenes or contact sheets. Never treat an installed Skill as proof of working filters or transcription.
+
+Keep every input, output, sidecar, and intermediate in `<work-dir>` outside the distribution. Use new output paths and preserve originals. These analysis commands use flags checked at the pin; replace the example segment range with measured timestamps:
+
+```bash
+FFMPEG_SCRIPTS="<ffmpeg-skill-dir>/scripts"
+python3 "$FFMPEG_SCRIPTS/probe.py" "<work-dir>/reference.mp4" --json
+python3 "$FFMPEG_SCRIPTS/scenes.py" "<work-dir>/reference.mp4" --json > "<work-dir>/analysis/scenes.json"
+python3 "$FFMPEG_SCRIPTS/look.py" "<work-dir>/reference.mp4" --tiles 4x3 -o "<work-dir>/analysis/overview.png" --json
+python3 "$FFMPEG_SCRIPTS/cut.py" "<work-dir>/reference.mp4" --segments 0-2 --accurate -o "<work-dir>/analysis/segment.mp4" --json
+```
+
+Create the analysis directory first. `scenes.json` is a measured scene report, not our `cut-list.csv` schema. A 4x3 contact sheet is an overview, not a substitute for the full per-second or first-three-second sheets. Use our scripts below for those required artifacts, the standard cut-list CSV, and silent per-shot clips. Read and visually inspect the generated PNG; link it with the timestamps. If `drawtext` is absent, `look.py --no-timecode` and `scenes.py --sheet <path> --no-timecode` can still work, but they have no burnt-in timestamps: record the actual sample times, or use our CSV-backed sheets. Never invent timestamp labels.
+
+For `caption.py --transcribe`, first verify a local supported engine (whisper.cpp, faster-whisper, or openai-whisper) and its model are already installed and cached. Read the pinned engine-selection code before use: `--model` accepts the engine's model name or path, and a name can trigger a download. Check every engine it can fall back to, not just the first installed one; if you cannot establish that the entire attempted route uses only existing models, skip automatic transcription. Do not download a model without approval. For example, only with a verified local engine/model:
+
+```bash
+python3 "$FFMPEG_SCRIPTS/caption.py" "<work-dir>/reference.mp4" --transcribe --model "<installed-model-name-or-path>" --language "<language>" --mode mux --write-srt "<work-dir>/analysis/transcript.srt" -o "<work-dir>/analysis/transcribed.mp4" --json
+```
+
+`--mode mux` writes a separate video with a toggleable subtitle stream, not burnt-in pixels. Confirm the required mux encoder and read the SRT; label transcription **estimate** until checked. Without the engine, model, or required capability, use the existing transcription path below or mark spoken words **unknown**. No paid transcription is started as a fallback.
+
+### Distributed analysis path
+
 The scripts in this Skill's `scripts/` directory are deterministic. Each takes a local video and an output directory, writes files only, never accesses the network, and exits non-zero with a readable message when a dependency is missing.
 
 | Script | Needs | Writes |
@@ -106,6 +134,24 @@ whisper-cli -m "<model.bin>" -l <language> -f "<work-dir>/analysis/audio.wav" -o
 Set `<language>` to the ad's spoken language code (for example `en`); use `auto` only when it is unknown, since detection can fail on short clips. Label the transcript an **estimate** of the spoken words until checked against the audio or the captions. `faster-whisper` is a Python library without its own command; use it only if it is already installed. If no transcriber is available, read on-screen text from the frame sheets, ask the user for captions, and mark the spoken transcript **unknown**.
 
 Then write, linked to the artifacts above: literal notes for every shot in the cut list, the hook in the first three seconds, pacing (shot count, average and shortest shot length from the cut list), text timing, voice notes, and music notes. Voice character, music genre, and tempo are **unknown** unless the transcript, the user, or an available tool establishes them. For a still image, map the composition with percentage-based x/y zones instead.
+
+### Finishing an existing remake in Claude Code
+
+The same installed-script and per-operation gates apply when the user supplies an existing remake or an approved generation batch returns one. This edits existing media; it does not generate a new ad from prompts or turn the free pack into a claimed render. Paid generation and all external actions still follow `provider-policy` and the workflow's approvals.
+
+Use `fit.py` for 9:16, `caption.py` for supplied/verified text, `redact.py` to blur an explicitly identified region, and `render.py` for a destination export. Check the real frame before choosing a region or crop. For example, choose one destination, an actual existing SRT, and measured pixel coordinates rather than running these as an unplanned batch:
+
+```bash
+python3 "$FFMPEG_SCRIPTS/fit.py" "<work-dir>/remake.mp4" --aspect 9:16 --fit pad -o "<work-dir>/vertical.mp4" --json
+python3 "$FFMPEG_SCRIPTS/caption.py" "<work-dir>/vertical.mp4" --srt "<work-dir>/approved.srt" -o "<work-dir>/captioned.mp4" --json
+python3 "$FFMPEG_SCRIPTS/redact.py" "<work-dir>/remake.mp4" --x <x> --y <y> --width <width> --height <height> --mode blur -o "<work-dir>/redacted.mp4" --json
+python3 "$FFMPEG_SCRIPTS/render.py" --template reels "<work-dir>/clean-remake.mp4" -o "<work-dir>/final-reels.mp4" --json
+python3 "$FFMPEG_SCRIPTS/check.py" "<work-dir>/final-reels.mp4" --platform reels --json
+```
+
+For TikTok use `--template tiktok` and `--platform tiktok`. Fit before captions; if the edit needs three or more steps, use the installed `render.py` project format after reading its help/reference. A delivery-only request needs a single template, not every recipe above. The render template encodes local files and performs technical checks; it never uploads or publishes. Caption burning needs a working `subtitles` filter and fonts, while template stages depend on the actual requested inputs. If a finishing tool is unavailable, report the missing output and deliver the pack or existing intermediate with that limitation; our local analysis scripts remain available and are not a promise of equivalent finishing.
+
+Require exit 0, an existing nonempty output, and a probe matching the requested duration, dimensions, frame rate, and audio. Review `check.py` warnings and failures, then run `look.py` and inspect pixels after every picture change. A technical pass does not approve the ad. Blurring a known leftover competitor mark is allowed only if the final no longer contains any identifiable trace; if the region, packaging, person, voice, music, caption, watermark, or metadata still identifies the competitor, the workflow's QC fails and the material must be replaced or removed. Keep both score thresholds and final human approval.
 
 ## 5. Design the remake pack
 
