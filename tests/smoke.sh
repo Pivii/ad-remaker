@@ -10,6 +10,8 @@ KEEP=0
 PROVIDER="${SMOKE_PROVIDER:-copilot}"
 MODEL="${SMOKE_MODEL:-gpt-4.1}"
 MAX_TURNS=8
+CHAT_TIMEOUT="${SMOKE_CHAT_TIMEOUT:-300}"
+CHAT_PID=""
 PROFILE_PREFIX="ar-smoke-"
 PROFILE=""
 PROFILE_CREATED=0
@@ -36,6 +38,7 @@ Options:
 Environment:
   SMOKE_PROVIDER  Hermes inference provider for stage 3 (default: copilot).
   SMOKE_MODEL     Model for stage 3 (default: gpt-4.1).
+  SMOKE_CHAT_TIMEOUT  Seconds before one chat scenario is stopped (default: 300).
 
 Logs go to a temporary directory printed at the end. It is deleted on success
 unless --keep is given, and kept on failure.
@@ -69,6 +72,7 @@ delete_profile() {
 
 cleanup() {
   trap - EXIT INT TERM
+  if [ -n "$CHAT_PID" ]; then kill "$CHAT_PID" 2>/dev/null; wait "$CHAT_PID" 2>/dev/null; fi
   delete_profile
   if [ "$STATUS" -eq 0 ] && [ "$KEEP" -eq 0 ]; then
     rm -rf "$WORK"
@@ -152,9 +156,12 @@ else
 fi
 
 # Keep the throwaway profile free-only and non-blocking: no paid auxiliary model
-# fallback, and a headless `clarify` question returns at once instead of waiting.
+# fallback, a headless `clarify` question returns at once instead of waiting, and
+# a failed model call (for example HTTP 429) is reported instead of retried after
+# a provider back-off that can last 10 minutes.
 hermes -p "$PROFILE" config set auxiliary.free_only true >"$WORK/config.log" 2>&1 \
   && hermes -p "$PROFILE" config set agent.clarify_timeout 5 >>"$WORK/config.log" 2>&1 \
+  && hermes -p "$PROFILE" config set agent.api_max_retries 1 >>"$WORK/config.log" 2>&1 \
   || fail "could not configure the throwaway profile (see config.log)"
 
 if hermes -p "$PROFILE" skills list >"$WORK/skills-list.log" 2>&1; then
@@ -225,9 +232,28 @@ run_scenario() {
   echo "   prompt: $prompt"
   # Run from the log directory, not the repository: Hermes injects AGENTS.md from
   # the working directory, and the repository's AGENTS.md is for contributors.
-  (cd "$dir" && hermes -p "$PROFILE" chat -v -q "$prompt" --provider "$PROVIDER" -m "$MODEL" \
-    --max-turns "$MAX_TURNS" --source tool) >"$dir/chat.log" 2>&1
+  (cd "$dir" && exec hermes -p "$PROFILE" chat -v -q "$prompt" --provider "$PROVIDER" -m "$MODEL" \
+    --max-turns "$MAX_TURNS" --source tool) >"$dir/chat.log" 2>&1 &
+  CHAT_PID=$!
+  local waited=0
+  while kill -0 "$CHAT_PID" 2>/dev/null && [ "$waited" -lt "$CHAT_TIMEOUT" ]; do
+    sleep 1
+    waited=$((waited + 1))
+  done
+  if kill -0 "$CHAT_PID" 2>/dev/null; then
+    kill "$CHAT_PID" 2>/dev/null
+    wait "$CHAT_PID" 2>/dev/null
+    CHAT_PID=""
+    fail "$name: no answer within ${CHAT_TIMEOUT}s (SMOKE_CHAT_TIMEOUT); see $dir/chat.log"
+    return
+  fi
+  wait "$CHAT_PID"
   local code=$?
+  CHAT_PID=""
+  if grep -qE 'RateLimitError|status=429' "$dir/chat.log"; then
+    fail "$name: the model provider rate-limited the run (HTTP 429). This is not an agent failure; rerun later."
+    return
+  fi
   local session
   session="$(awk '/^Session:/ { print $2 }' "$dir/chat.log" | tail -n 1)"
   if [ "$code" -ne 0 ] || [ -z "$session" ] || ! grep -q 'API call #1:' "$dir/chat.log"; then
