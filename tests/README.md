@@ -13,6 +13,8 @@ Tests must verify the distribution before each stable release.
 - the pin table in `skills/providers/SKILL.md` is well formed: known vendors, a 40-character commit or `none` per row, an `Install` value (`hermes` only with a pin), a license note, and a check date;
 - the English-facing operating report exists and the old French-facing path does not;
 - the Claude Code plugin: `.claude-plugin/plugin.json` is named `ad-remaker` with the `distribution.yaml` version, `.claude-plugin/marketplace.json` lists only this repository, and the body of `agents/ad-remaker.md` equals `SOUL.md` (fix with `python3 scripts/sync_claude_agent.py`);
+- the Codex manifest uses the canonical identity/version, Skills path and an explicit empty MCP mapping;
+- each Skill first loads its generated agent-rule reference and the validator rejects drift from `SOUL.md`;
 - `.mcp.json` declares the same server names and URLs as `config.yaml` `mcp_servers`, without literal secrets.
 
 Run:
@@ -151,3 +153,54 @@ Caption burning and transcription were not exercised: this FFmpeg lacks `subtitl
 Distribution 0.7.0 validation passed under both the stdlib parser (`python3`, also `python3 -S`) and PyYAML (existing Hermes venv Python). All 11 MCP fixtures passed under both parsers. Provider installer dry runs returned 3 for `ffmpeg-skill` and mixed `pika ffmpeg-skill`, with no install command printed; Pika's existing pinned install and audit commands were unchanged, exit 0; unknown vendor `acme` returned 2. `bash -n` and `git diff --check` passed.
 
 Both Claude Code manifests validated; the plugin manifest had only the expected root `CLAUDE.md` warning. An isolated `CLAUDE_CONFIG_DIR` marketplace install loaded Ad Remaker 0.7.0 with 5 Skills, 1 agent, and the existing 5 MCP declarations; ffmpeg-skill remained separately installed in the scratch project. In a separate isolated `HERMES_HOME`, `hermes profile install <worktree> --name ad-remaker-issue13-scratch --yes`, `profile show`, `skills list`, and `mcp list` loaded 0.7.0 with 5 enabled local Skills, no hub Skills, and all 5 MCP servers disabled. No live connection or chat was tested, and the maintainer's profiles/configuration were untouched.
+
+## Codex CLI checks
+
+```bash
+python3 tests/check_codex.py
+python3 tests/check_codex.py --source Pivii/ad-remaker --ref main
+python3 tests/check_codex_chat.py                         # guard regressions only, no model
+python3 tests/check_codex_chat.py --chat --model gpt-6.1-sol --keep
+```
+
+The first check also rejects stale generated rules, mismatched Codex versions and a nonempty Codex MCP mapping. It uses a throwaway `CODEX_HOME` and working directory outside the contributor checkout. It exports tracked files to a clean skills-only marketplace, creates ignored runtime/credential/worktree sentinels in an isolated source copy, and proves none appear in the export or installed cache. It compares all installed Skill/support files byte-for-byte. `skills/list` must discover exactly the five enabled plugin Skills under `ad-remaker:<name>`. It starts an ephemeral thread without a model turn and asserts `mcpServerStatus/list` is empty. It parses a disabled vendor entry with `mcp get`, removes it without logging in, updates/reinstalls, uninstalls and removes the cache/catalog. Local update changes a test-only version to prove a new package is selected; Git update refreshes the selected ref before reinstall. Real user config/auth/plugin-registration fingerprints must remain unchanged. Scratch files are always removed. Git checks use existing Git access, never vendor credentials.
+
+`codex mcp add --url` can immediately discover OAuth/login on CLI 0.160.0 and is deliberately not part of this model-free suite. An initial implementation probe was stopped while that command was pending; it may have contacted the vendor for OAuth discovery. No authentication completed, no campaign or generation call occurred, and its scratch directory was removed. Subsequent configuration checks write `enabled = false` in scratch TOML and only parse it. Do not claim the entire implementation run made zero provider contact.
+
+The chat check is separate from Hermes' openai-codex inference. It requires existing file-backed Codex ChatGPT authentication (`auth_mode: chatgpt`), copies it into a protected scratch directory, removes API-key environment overrides, and explicitly selects `gpt-6.1-sol` by default. It uses OpenAI inference through the ChatGPT subscription allowance; limits are account-specific and no monetary per-run price is asserted. No fallback to an API key or another model is permitted. Authentication and the entire scratch Codex home are deleted even when logs are kept.
+
+Before model requests, `hooks/list` must report exactly the enabled reviewed test-only `PreToolUse` hook; no additional hooks are accepted. The CLI explicitly trusts this vetted isolated definition with `--dangerously-bypass-hook-trust`. This flag is test machinery, not an installation instruction. The guard permits only `cat` with exact absolute installed `SKILL.md` and generated-rule paths, rejecting expansions, redirections, chains, other file reads, patches, MCP calls and all other tools. Apps/browser/computer tools are disabled, no MCP server is loaded, and the runtime sandbox is read-only as an additional boundary. The code-mode host remains enabled because this client routes shell through it; hooks guard its nested tool calls. Unit checks verify rejected bypass shapes. A real model canary must attempt a harmless scratch `touch` command, receive a hook denial, and leave no file before business scenarios run. A missing/disabled hook, failed canary, or unsupported runtime fails closed. Only approved instruction reads can dispatch in business scenarios; no local media processing is exercised.
+
+| Scenario | Verified behavior |
+|---|---|
+| Workflow | Explicit `ad-remaker:winning-ad-remake-workflow`; actual main/provider/routing/fallback Skill and generated-rule reads; free text pack and honest unknown capabilities |
+| Generation | Direct `ad-remaker:provider-policy`; provider/routing rule reads; unknown pricing/authentication, batch/cost approval required, no paid generation |
+| Meta | Direct `ad-remaker:meta-ads-usage`; Meta/provider/routing rule reads; paused draft, read-back, separate external-action approval and no write dispatch |
+
+Replies are checked for the listed behavior terms, and instruction reads are asserted from guard records independently of package installation. These are selected guarded scenarios, not proof of compliance for every prompt, implicit Skill selection, real media rendering, or live vendors. The read-only harness is disclosed in each prompt; policy decisions are read from installed files. Logs are temporary, deleted on success unless `--keep`, and retained on failure after removing auth/runtime state.
+
+Verification on October 8, 2026 with Codex CLI 0.160.0 and distribution 0.8.0: local and authenticated private Git (`Pivii/ad-remaker`, ref `feat/22-codex-support`) install/discovery/no-MCP/support-file/sentinel/update/removal checks passed; canary plus all three behavioral scenarios passed using `gpt-6.1-sol` and ChatGPT allowance. The successful initial behavior run reported 331,657 input tokens (244,736 cached) and 3,538 output tokens across the four turns; these are client usage counters, not a currency price. Generated rules were read from the installed cache in every required operational scenario. No real media or external action was dispatched by the guarded suite.
+
+Desktop is a required target, not an optional exclusion. Actual Plugins Directory installation, discovery of the five Skills, and explicit workflow invocation with required rule loading must be verified before issue #22 is complete. Desktop-bundled runtime tests are evidence about the backend, not those GUI actions. IDE/cloud remain unverified.
+
+
+The private Git check initially rejected `.git` under an overly broad cache-state assertion. Inspection established that Codex copies installer-created Git metadata into its cache. The refined check permits only that Git metadata for Git-backed installs, validates its config/remote URLs without printing contents, and still rejects worktrees, credential paths, memories, sessions, brand data and outputs. Git upgrade returned the selected marketplace with `errors: []`; it refreshed/reinstalled the same selected branch/version, not a published release migration. The local update test separately proves changed-version selection. No `.git` is allowed in the clean author-owned local export.
+
+The mandatory `SMOKE_PROVIDER=openai-codex SMOKE_MODEL=gpt-6.1-sol tests/smoke.sh --chat --keep` passed on this branch: all three stages, five enabled local Skills, five disabled MCP servers, and all four guarded Hermes chat scenarios. The throwaway profile was deleted. Existing six smoke regressions, eleven MCP fixtures, Bash/Python syntax, both Claude manifest validations, and generated-rule/subagent synchronization passed. Claude validation retained only the expected root CLAUDE.md warning.
+
+## Required Desktop runtime and GUI verification
+
+```bash
+python3 tests/check_codex_desktop.py
+python3 tests/check_codex_desktop.py --chat --keep
+```
+
+The checker reads only installed application metadata/source and runs its embedded backend in a throwaway `CODEX_HOME`. It does not start the GUI or read/copy application session databases or the user's complete configuration. The installed app is `/Applications/ChatGPT.app`, bundle `com.openai.codex`, version `26.930.61225`, build `13520`. Its actual bundled executable reports `codex-cli 0.160.1`, distinct from the previously tested standalone CLI 0.160.0. A different installation can be selected with `--app`; version identification is automatic test evidence, never a user installation step.
+
+Application source contains the plugin/install and plugin/installed API paths exercised by the checker. After registering the clean marketplace through that bundled executable, the checker uses native app-server plugin/list, plugin/install, plugin/installed and plugin/uninstall calls, asserts five enabled Skills with byte-identical support/rule files, and verifies zero MCP servers after thread startup. The static part makes no model or vendor request. An initial direct catalog install was not found by plugin/installed from an unrelated project; marketplace registration is required for cross-project discovery, as in the user install commands.
+
+With `--chat`, only a real guarded canary and one workflow scenario run through the explicit Desktop-bundled executable. They reuse the existing vetted PreToolUse guard and subscription/model selection, rather than repeating unchanged CLI policy scenarios. `CODEX_TEST_BIN` selects the runtime in reusable checks; `--workflow-only` narrows the guarded suite. A runtime pass proves instruction loading through the bundled engine, not installation clicks, displayed Skill menus or composer selection. This distinction is mandatory, and the PR stays draft with `Refs #22` while the GUI criterion is open.
+
+Remaining useful GUI check after the documented installation: open the Desktop Plugins Directory and confirm `ad-remaker` is installed/enabled from its registered source; in a new neutral project outside the distribution, verify all five Skill selectors and select the main workflow; send a free-mode prompt, inspect required rule/policy reads, and confirm honest missing capabilities without provider connection or claimed render. No About/version-reading step is required. The headless-only ship workflow cannot perform these UI interactions, so their result must remain unverified until they are actually exercised.
+
+Desktop-bundled runtime verification on October 8, 2026: `python3 tests/check_codex_desktop.py --chat --keep` passed native backend catalogue/install/installed/discovery/uninstall, five byte-identical Skill/support bundles, zero MCP startup, unchanged real-user fingerprints, and the real canary plus explicit workflow/rule-read scenario. The two model turns used `gpt-6.1-sol` with existing ChatGPT allowance and reported 146,109 input tokens (109,440 cached) and 1,298 output tokens. Non-auth logs: `/var/folders/_b/q29bwvcj7n15586gwdbqwnmc0000gn/T/ar-codex-chat-7rfc9lzy`. GUI/composer result remains unverified; issue #22 is open and PR #23 is draft.

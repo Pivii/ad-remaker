@@ -64,3 +64,9 @@ skills/.*
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Local agent worktrees and private outputs
+.claude/worktrees/
+.codex/worktrees/
+memory/
+outputs/

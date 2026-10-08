@@ -26,3 +26,5 @@ Accepted decisions:
 - `ADR-002-provider-skill-layers.md`: keep provider policy local and install pinned official vendor Skills.
 - `ADR-003-claude-code-plugin.md`: ship the same content as a Claude Code plugin, with `SOUL.md` as the single source of the subagent prompt.
 - `ADR-004-ffmpeg-skill-claude-code-only.md`: recommend the pinned community ffmpeg-skill for optional local analysis and finishing in Claude Code, while Hermes keeps our own scripts.
+
+- `ADR-005-codex-skills-only.md`: ship Codex Skills with generated rules, no bundled providers, clean export and isolated verification.

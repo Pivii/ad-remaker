@@ -82,10 +82,18 @@ The repository root is also a Claude Code plugin (ADR-003). It reuses `skills/` 
 
 Claude Code starts a plugin's MCP servers whenever the plugin is enabled; there is no per-server `enabled: false`. Every declared server uses OAuth and stays unauthenticated until the user signs in. Users turn off the vendors they do not pay for in `/mcp` or with `deniedMcpServers` (see `README.md`). `scripts/validate_distribution.py` fails when the subagent body differs from `SOUL.md`, when the two MCP declarations differ, or when the plugin version differs from `distribution.yaml`.
 
+### Codex CLI and Desktop plugin
+
+Codex reuses the same canonical `skills/` tree (ADR-005). `.codex-plugin/plugin.json` has the same identity/version as the profile and an explicit empty MCP mapping, overriding Claude's declarations on the tested CLI. It does not load the Claude subagent as a global persona. Every Skill first loads its generated `references/agent-rules.md` plus applicable sibling policies; `scripts/sync_skill_rules.py` and validation keep the rules identical to `SOUL.md`.
+
+Local installation consumes the tracked-file allowlisted export from `scripts/export_codex_package.py`, never a live development clone. Private Git installation consumes a clean Git snapshot. Brand data, sessions, outputs and credentials belong outside the package/cache. Contributor context is not operating context; start tasks from the user's working project.
+
+Vendor MCP servers and vendor Skills are optional per user and not bundled into Codex. The plugin starts no vendor servers; existing user tools can still be present. Users explicitly add/disable/remove the desired server in Codex configuration and authenticate separately. No Codex OAuth/Meta client-ID behavior or live provider capability is verified by parsing its configuration. FFmpeg remains Claude-only under ADR-004. CLI and Desktop are required targets. Headless checks of the Desktop-bundled backend are distinct from actual Plugins Directory/composer verification; the latter remains required before issue #22 is complete. Exact commands, tested versions, and remaining surface checks are in `README.md` and `tests/README.md`.
+
 ### Scheduled jobs
 
 The distribution currently provides no scheduled jobs. Any future routine must be shipped paused and must never trigger spending, publication, or campaign activation on its own.
 
 ## File ownership
 
-The distribution owns `SOUL.md`, `config.yaml`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. The Claude Code plugin files (`.claude-plugin/`, `agents/`, `.mcp.json`) are derived from them and checked by the validator. `config.yaml` is copied on install but preserved on `hermes profile update` unless `--force-config` is passed. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.
+The distribution owns `SOUL.md`, `config.yaml`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. The plugin files (`.claude-plugin/`, `.codex-plugin/`, `agents/`, `.mcp.json`) are derived from them and checked by the validator. `config.yaml` is copied on install but preserved on `hermes profile update` unless `--force-config` is passed. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.

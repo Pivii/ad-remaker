@@ -5,6 +5,13 @@ description: Use when no ad-intelligence, media-generation, or Meta Ads provider
 
 # Free fallback mode
 
+## Required rule loading
+
+Before handling the task, read [the agent rules](references/agent-rules.md), generated from the canonical `SOUL.md`. Read the sibling `winning-ad-remake-workflow` and `provider-policy` Skills before applying this fallback. Read `meta-ads-usage` before preparing any Meta instructions. Resolve sibling Skills relative to this installed Skill directory, not the working project. If a required file is missing or unreadable, report it and stop the affected operation. Do not infer rule loading from installation or from this summary.
+
+In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
+
+
 This Skill is the no-connection path of `winning-ad-remake-workflow`. It replaces each provider stage that has no available, authenticated tool. Every rule of the workflow, of `provider-policy`, and of `SOUL.md` still applies: evidence labels, no exact copy, supported claims only, zero competitor traces, and human approval before any cost or external action.
 
 The result is a complete remake pack ready for a human or a tool chosen by the user. It is not a rendered ad.

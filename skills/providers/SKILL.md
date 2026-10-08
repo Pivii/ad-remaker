@@ -5,6 +5,13 @@ description: Use when choosing, installing, or routing to an external provider (
 
 # Providers
 
+## Required rule loading
+
+Before handling the task, read [the agent rules](references/agent-rules.md), generated from the canonical `SOUL.md`. Read the sibling `provider-policy` Skill before routing, installation, or a provider call. Resolve sibling Skills relative to this installed Skill directory, not the working project. If a required file is missing or unreadable, report it and stop the affected operation. Do not infer rule loading from installation or from this summary.
+
+In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
+
+
 This is a routing directory, not usage documentation. How to use a vendor comes from its official Skill or documentation, listed below. The shared rules for every provider call are in `provider-policy`, and they win over any vendor Skill.
 
 Every source, license, and route below was checked on the date in the table. Treat it as a dated snapshot: re-check before relying on it, and never treat an entry as proof that a vendor is connected.

@@ -5,6 +5,13 @@ description: Use when researching a winning ad and producing a brand-safe remake
 
 # Winning-ad remake workflow
 
+## Required rule loading
+
+Before handling the task, read [the agent rules](references/agent-rules.md), generated from the canonical `SOUL.md`. Read the sibling `provider-policy` and `providers` Skills now. Before any Meta stage, read `meta-ads-usage`; for an unavailable provider stage, read `free-fallback-mode`. Resolve sibling Skills relative to this installed Skill directory, not the working project. If a required file is missing or unreadable, report it and stop the affected operation. Do not infer rule loading from installation or from this summary.
+
+In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
+
+
 Every call to an external provider follows `provider-policy`. Use `providers` to find a vendor's official source and route order. Before each stage below, check which providers are actually connected; a server declared in `config.yaml` with `enabled: false` is not connected. When a stage has none, run it with the `free-fallback-mode` Skill and tell the user which stages use that free path.
 
 ## 1. Select and classify the reference
