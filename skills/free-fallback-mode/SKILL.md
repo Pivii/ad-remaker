@@ -11,8 +11,9 @@ Before handling the task, read [the agent rules](references/agent-rules.md), gen
 
 In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
 
+Before a relevant advertising task, read the sibling `setup` Skill and its rule reference, then load private settings. Incomplete setup offers guided choices before research; a confirmed free choice is complete and needs no login. Completed choices are reused without another questionnaire. Follow setup precedence and recovery without silently switching the saved route. Setup itself does not spend or write to provider accounts. Documentation-only pin/source lookups and ordinary coding tasks do not trigger the questionnaire.
 
-This Skill is the no-connection path of `winning-ad-remake-workflow`. It replaces each provider stage that has no available, authenticated tool. Every rule of the workflow, of `provider-policy`, and of `SOUL.md` still applies: evidence labels, no exact copy, supported claims only, zero competitor traces, and human approval before any cost or external action.
+This Skill is the no-connection path of `winning-ad-remake-workflow`. It serves stages explicitly selected as free or using an authorized fallback after a reported connection failure. Missing providers alone do not silently complete setup or replace a saved preference. Every rule of the workflow, of `provider-policy`, and of `SOUL.md` still applies: evidence labels, no exact copy, supported claims only, zero competitor traces, and human approval before any cost or external action.
 
 The result is a complete remake pack ready for a human or a tool chosen by the user. It is not a rendered ad.
 

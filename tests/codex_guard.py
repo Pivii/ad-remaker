@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import shlex
 import sys
+from setup_guard import helper_command
 
 
 def permitted(event: dict, files: set[str]) -> list[str]:
@@ -28,11 +29,12 @@ def main() -> int:
     config = json.loads(Path(sys.argv[1]).read_text())
     event = json.load(sys.stdin)
     reads = permitted(event, set(config['files']))
+    setup = helper_command(event.get('tool_input', {}).get('command'), config['setup']) if event.get('tool_name') == 'Bash' and config.get('setup') else []
     with Path(config['log']).open('a') as log:
         log.write(json.dumps({'tool': event.get('tool_name'), 'reads': reads,
-                              'blocked': not bool(reads), 'input': event.get('tool_input')}) + '\n')
-    output = {'hookEventName': 'PreToolUse', 'permissionDecision': 'allow' if reads else 'deny'}
-    if not reads:
+                              'setup': setup, 'blocked': not bool(reads or setup), 'input': event.get('tool_input')}) + '\n')
+    output = {'hookEventName': 'PreToolUse', 'permissionDecision': 'allow' if reads or setup else 'deny'}
+    if not (reads or setup):
         output['permissionDecisionReason'] = ('Test-only guard: no shell/vendor side effects. '
             'Only cat with exact absolute installed Skill/rule paths is permitted.')
     print(json.dumps({'hookSpecificOutput': output}))

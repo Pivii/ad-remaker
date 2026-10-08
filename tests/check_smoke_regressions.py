@@ -40,6 +40,28 @@ class SmokeRegressionTests(unittest.TestCase):
             self.assertEqual(registry.dispatch("skill_view", {"name": "providers"}), "read-only result")
             self.assertEqual(executed, ["skill_view"])
 
+    def test_setup_terminal_is_confined_before_handler(self):
+        import sys
+        import shlex
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            setup = {'helper': str(ROOT / 'skills/setup/scripts/setup_state.py'),
+                     'python': sys.executable, 'runtime': 'hermes',
+                     'state_dir': str(root / 'state'), 'projects': [str(root / 'work')]}
+            guard = SmokeGuard(root / 'guard.jsonl', {'setup': setup, 'files': []})
+            args = [sys.executable, setup['helper'], '--runtime', 'hermes', '--state-dir', setup['state_dir'], '--project', setup['projects'][0], 'choose', '--free']
+            executed = []
+            def execute(inputs):
+                executed.append(inputs['command'])
+                return subprocess.check_output(shlex.split(inputs['command']), text=True)
+            result = guard.dispatch('terminal', {'command': shlex.join(args)}, execute)
+            self.assertEqual(json.loads(result)['preferences']['routes']['research'], 'free')
+            guard.dispatch('terminal', {'command': shlex.join(args) + '; touch /tmp/escape'}, execute)
+            guard.dispatch('terminal', {'command': shlex.join(args).replace(setup['state_dir'], str(root / 'escape'))}, execute)
+            guard.dispatch('mcp_trendtrack_search', {}, execute)
+            self.assertEqual(len(executed), 1)
+            self.assertFalse((root / 'escape').exists())
+
     def test_recording_failure_cannot_execute_a_tool(self):
         with tempfile.TemporaryDirectory() as temporary:
             executed = []

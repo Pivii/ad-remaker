@@ -17,6 +17,8 @@ This is an independent, unofficial adaptation. According to the maintainer, the 
 
 The main workflow runs these stages in order. Steps marked **you approve** stop until you give an explicit yes.
 
+**Setup, once.** On your first relevant ad task, the agent offers a short setup before any research: the free path, services you already use, or a choice per stage (research, video creation, delivery). **Free for everything** completes setup with no login. Your choices are saved outside Git and plugin caches and reused next time, each product keeps its own confirmed brief, and choosing a provider never approves any spending. Then the agent continues your original request.
+
 1. **Find** competitor ads with public performance signals, through a connected ad-intelligence tool or the free public ad libraries. Run length, variants, and visible engagement are signals, never proof of profitability; every statement is labeled fact, estimate, opinion, or unknown.
 2. **Deconstruct** the creative mechanics: hook, shot sequence, framing, pacing, on-screen text, voice, and music, with a cut list, frame sheets, and a transcript when the local tools are available. Anything the evidence does not establish is marked unknown.
 3. **Adapt** the mechanics to your real product: no exact copy, every competitor trace replaced (brand, logo, product, person, voice, music, captions, metadata), and only claims your brand files or sources support.
@@ -55,7 +57,7 @@ claude plugin marketplace add Pivii/ad-remaker
 claude plugin install ad-remaker@ad-remaker
 ```
 
-The plugin adds the `ad-remaker` subagent, five Skills, and five vendor MCP servers that stay unauthenticated until you sign in. Sign in only to the vendors you pay for, and block the others; see [Claude Code setup](docs/claude-code-setup.md), which also covers the optional local FFmpeg tool and vendor Skills.
+The plugin adds the `ad-remaker` subagent, six Skills, and five vendor MCP servers that stay unauthenticated until you sign in. Sign in only to the vendors you pay for, and block the others; see [Claude Code setup](docs/claude-code-setup.md), which also covers the optional local FFmpeg tool and vendor Skills.
 
 ### Codex CLI and Desktop
 
@@ -64,7 +66,7 @@ codex plugin marketplace add Pivii/ad-remaker --ref main
 codex plugin add ad-remaker@ad-remaker
 ```
 
-The plugin adds five Skills and no MCP servers. Verified with Codex CLI `0.160.0` and, headlessly, with the runtime bundled in Codex Desktop `26.930.61225` (runtime `0.160.1`); the Desktop Plugins Directory and Skill selection in its interface are not verified yet. For a local clone, export a clean package first. See [Codex setup](docs/codex-setup.md) for the local export, update, uninstall, and optional vendors.
+The plugin adds six Skills and no MCP servers. Verified with Codex CLI `0.160.0` and, headlessly, with the runtime bundled in Codex Desktop `26.930.61225` (runtime `0.160.1`); the Desktop Plugins Directory and Skill selection in its interface are not verified yet. For a local clone, export a clean package first. See [Codex setup](docs/codex-setup.md) for the local export, update, uninstall, and optional vendors.
 
 ### Hermes
 
@@ -85,7 +87,19 @@ The second command picks the model for the profile. Vendor MCP servers ship disa
 | Codex | `codex`, from your own project folder | Start each prompt with `$ad-remaker:winning-ad-remake-workflow`, or `$ad-remaker:meta-ads-usage` for the Meta prompt. Type `$` to select a Skill in the client. |
 | Hermes | `hermes -p ad-remaker` | Type a prompt below. For a single answer without a session, run `hermes -p ad-remaker chat -q "<prompt>"`. |
 
-Run the agent from your own project folder, not from this repository. A one-shot run cannot answer the agent's approval questions, so use a session for anything beyond research and analysis.
+Run the agent from your own project folder, not from this repository: product briefs are saved per project folder. A one-shot run cannot answer the agent's setup or approval questions, so use a session for your first run and for anything beyond research and analysis.
+
+### First run and setup
+
+Your first ad request starts a short setup; you do not need a paid service. To start it yourself, or to change your tools, your product brief, or both later:
+
+| Runtime | Setup entrypoint |
+|---|---|
+| Claude Code | `/ad-remaker:setup` |
+| Codex | `$ad-remaker:setup` |
+| Hermes | `Use your setup Skill to configure Ad Remaker.` |
+
+Free means public ad research and a script, storyboard, and prompts, with no new video rendered from prompts. Automatic setup depends on the client and model; if it does not appear, use the entrypoint above. [The setup guide](docs/setup.md) covers the routes, connecting a service you already use, where choices are saved, and recovery.
 
 ### Example prompts
 
@@ -97,7 +111,7 @@ Replace the text in angle brackets. Each example says what the agent asks before
 Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.
 ```
 
-The agent reports which stages run on the free path and which tools are missing. If no browser or search tool works in your runtime, it asks you for library links or screenshots instead of inventing results. Nothing here costs money, so there is no approval step; spend, revenue, and ROAS stay marked unknown.
+On a first run, the agent offers setup before searching; answer **Free for everything** to save the free path without any login, and it then continues this request. The agent reports which stages run on the free path and which tools are missing. If no browser or search tool works in your runtime, it asks you for library links or screenshots instead of inventing results. Nothing here costs money, so there is no approval step; spend, revenue, and ROAS stay marked unknown.
 
 **2. Full remake for your brand**
 
@@ -123,7 +137,7 @@ Keep your product facts in a folder you control, for example `local/brands/<bran
 Use only the brand facts in <brand folder> (brand.md, products.md, claims.md). Do not use any claim that is not supported there, and tell me what is missing before you propose a remake.
 ```
 
-The agent does not read this folder on its own; name it in your request. Claims, testimonials, and results that your files do not support are left out, not softened.
+The agent does not read this folder on its own; name it in your request. Setup can also save a confirmed brief for each product (see [the setup guide](docs/setup.md)); facts the agent infers from your documents stay unconfirmed until you approve them. Claims, testimonials, and results that your files do not support are left out, not softened.
 
 **5. Paused Meta campaign draft**
 

@@ -70,3 +70,7 @@ __pycache__/
 .codex/worktrees/
 memory/
 outputs/
+
+# Private onboarding state belongs outside the distribution
+ad-remaker-state/
+setup.json

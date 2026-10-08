@@ -97,3 +97,7 @@ The distribution currently provides no scheduled jobs. Any future routine must b
 ## File ownership
 
 The distribution owns `SOUL.md`, `config.yaml`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. The plugin files (`.claude-plugin/`, `.codex-plugin/`, `agents/`, `.mcp.json`) are derived from them and checked by the validator. `config.yaml` is copied on install but preserved on `hermes profile update` unless `--force-config` is passed. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.
+
+## Guided setup and private state
+
+The sixth shared Skill, `setup`, offers first-use routes before research and retains the original task. Its deterministic helper persists non-secret choices separately from canonical-project-keyed product context outside distributed files and Git. Canonical rules require this check; explicit invocation remains available when implicit Skill selection is absent. The service-readiness reference is generated from the service matrix for Skills-only installs. See [ADR-006](decisions/ADR-006-guided-setup-state.md) and [setup](setup.md). Connections, operation approvals and existing vendor ownership remain separate.

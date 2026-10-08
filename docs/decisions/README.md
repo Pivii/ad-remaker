@@ -28,3 +28,5 @@ Accepted decisions:
 - `ADR-004-ffmpeg-skill-claude-code-only.md`: recommend the pinned community ffmpeg-skill for optional local analysis and finishing in Claude Code, while Hermes keeps our own scripts.
 
 - `ADR-005-codex-skills-only.md`: ship Codex Skills with generated rules, no bundled providers, clean export and isolated verification.
+
+- `ADR-006-guided-setup-state.md`: guide first use, persist private per-runtime choices and separate product context without provider side effects.
