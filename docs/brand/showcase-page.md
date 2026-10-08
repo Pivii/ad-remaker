@@ -3,13 +3,13 @@
 Status: first design recorded as validated on October 8, 2026. Implementation handoff revised on the same date; local copy adaptations require maintainer review before publication.
 Design source: Claude Design canvas, private to the maintainer: https://claude.ai/artifact/7RKMDg6kWBckmwiCLg9PBf
 
-This file is the build spec for a one-page site that presents the agent, its two install paths, and a separate third-party Rerun template. It reuses the logo identity described in [logo-brief.md](logo-brief.md).
+This file is the build spec for a one-page site that presents the agent, its two install paths, and a hosted alternative. It reuses the logo identity described in [logo-brief.md](logo-brief.md).
 
 Provenance: visual tokens, typography, section order, and motion were transcribed from the design linked above. The private canvas was not independently checked during this revision. The copy table, current installation instructions, third-party scope notes, and layout adjustments for those changes are locally authored adaptations based on `SOUL.md`, `README.md`, and the dated vendor source. They are not claimed to be approved canvas text.
 
 ## Goal
 
-Present Ad Remaker in one scroll. Keep the no-code Rerun template first in the install section, with its third-party status and workflow differences visible. The Hermes profile and Claude Code plugin follow because they need a terminal. Both exist today in this private repository; public access and an open-source license are not yet available.
+Present Ad Remaker in one scroll. Place the attribution immediately below the hero title and the comparison before the local installation commands. The hosted option is the simple path for people who do not use a terminal. This independent distribution provides a Claude Code plugin and a Hermes profile under MIT. The repository remains private pending maintainer approval.
 
 ## Tokens
 
@@ -22,7 +22,7 @@ Present Ad Remaker in one scroll. Keep the no-code Rerun template first in the i
 | Line on ink | `#333333` | Guardrail card borders |
 | Text muted | `#555555` on paper, `#BDBDBD` or `#D4D4D4` on ink | Body copy |
 | Accent | `#0866FF` | Front card and primary button. Exposed as one variable, see open decision 1 in the logo brief |
-| Lime | `#C6F432` | Nav install button, Rerun button, code text, hover outlines. Always with ink text, never white |
+| Lime | `#C6F432` | Nav install button, hosted-option button, code text, hover outlines. Always with ink text, never white |
 | Orange | `#FF7A1A` | Step 05 chip. Ink text |
 | Purple | `#8B5CF6` | Steps 01 and 02 chips. White text only at 14 px bold or larger |
 
@@ -42,14 +42,13 @@ The wordmark in the nav and footer is lowercase `ad remaker`, Poppins 700, -0.03
 
 Content width 1200 px max, 24 px side gutter. Every row wraps to one column on a phone. Card grids use `repeat(auto-fit, minmax(<min>, 1fr))`.
 
-1. **Header and hero, ink background.** Nav: wordmark left; "How it works", "Guardrails" and a lime "Install" pill right. Hero, two columns: eyebrow pill `Hermes · Claude Code · A separate Rerun template`, H1 "Turn ad references into your own creative.", lead paragraph from the copy table, primary button "Explore the install options" (accent, anchor `#install`) and ghost button "See the workflow" (anchor `#how`). Right column: the logo mark drawn large (max 480 px square), built from the logo brief geometry so it can animate.
+1. **Header and hero, ink background.** Nav: wordmark left; "How it works", "Guardrails" and a lime "Install" pill right. Hero, two columns: eyebrow pill `Hermes · Claude Code`, H1 "Turn ad references into your own creative.", attribution from the section below directly under the H1, lead paragraph from the copy table, primary button "Explore the install options" (accent, anchor `#install`) and ghost button "See the workflow" (anchor `#how`). Right column: the logo mark drawn large (max 480 px square), built from the logo brief geometry so it can animate.
 2. **Stack legend, paper.** Four columns, one per card color: Research (purple), Generation (orange), Runtime (lime), The finished ad (accent). A 20 px swatch plus a title and the description from the copy table.
 3. **How it works, `#how`.** H2 "From an ad reference to your own, in six steps." Six cards (min 300 px), with titles and descriptions from the copy table. Step 04 is the only ink card, with the chip "04 · YOU APPROVE".
-4. **Guardrails, `#rules`, ink background.** H2 "It works for you. It never spends for you." Four cards with a lime stroke icon, titled "Never an exact copy", "No invented claims", "Approval before any spend", and "Nothing goes live alone", with descriptions from the copy table. Display the scope note directly below the heading: these rules apply to Ad Remaker's Hermes profile and Claude Code plugin, not automatically to the third-party template.
-5. **Install, `#install`.** H2 "Run it where you already work." Three cards (min 320 px), in this order:
-   - **Rerun template**, ink card, chips "No code" and "Third-party template". Body and three lime checks from the copy table. Keep the workflow-difference notice visible next to the lime button "View the Rerun template". Do not label it "Recommended" or present it as an installation of this distribution.
-   - **Hermes profile**, chip "Public access pending", body from the copy table, code block `hermes profile install /path/to/ad-remaker --yes`.
+4. **Guardrails, `#rules`, ink background.** H2 "It works for you. It never spends for you." Four cards with a lime stroke icon, titled "Never an exact copy", "No invented claims", "Approval before any spend", and "Nothing goes live alone", with descriptions from the copy table. Display the scope note directly below the heading: these rules apply to Ad Remaker's Hermes profile and Claude Code plugin.
+5. **Choose a version, `#install`.** H2 "Which version should you choose?". Render the comparison below with three option columns and one row-label column. Preserve the option order: hosted service, Claude Code plugin, Hermes profile. On phones, allow horizontal table scrolling with visible row labels, or render equivalent labeled cards. Place the hosted-service link and its affiliate disclosure inside this comparison. Follow it with two local installation cards (min 320 px):
    - **Claude Code plugin**, chip "Public access pending", body from the copy table, code block with the two commands in the installation section below.
+   - **Hermes profile**, chip "Public access pending", body from the copy table, code block `hermes profile install /path/to/ad-remaker --yes`.
 6. **Footer.** Wordmark and the line "Analyze the mechanics. Rebuild for your product. You approve every spend."
 
 Install cards share one structure (chip row, title, body that grows, bottom element). Use a shared bottom row with a minimum height of 60 px and enough room for the two-line plugin command. Align the cards at the bottom; do not clip or shrink code to preserve a fixed height.
@@ -77,16 +76,11 @@ The following locally authored text completes the handoff. Use it literally when
 | Step 05 description | Use available tools to produce the approved adaptation, then inspect the downloaded outputs. |
 | Step 06 title | Deliver for review |
 | Step 06 description | Receive a launch pack, or approved paused Meta drafts when the connection is available. Activation needs separate approval. |
-| Guardrails scope note | These safeguards govern Ad Remaker in Hermes and Claude Code. The separate Rerun template has its own workflow; review its differences below. |
+| Guardrails scope note | These safeguards govern Ad Remaker in Hermes and Claude Code. |
 | Never an exact copy description | Rebuild the creative mechanics for your product. Remove the competitor's identifiable content. |
 | No invented claims description | Use evidence for product claims, testimonials, and results. Report what remains unknown. |
 | Approval before any spend description | Approve the exact paid batch before generation. Campaign spend needs separate approval. |
 | Nothing goes live alone description | Publication, activation, and scheduling each require explicit approval. |
-| Rerun body | A separate no-code template published by Rerun. Review its workflow and provider requirements before using it. |
-| Rerun check 1 | Template listed as free, with about five minutes of setup. Connected service costs are separate and must be checked. |
-| Rerun check 2 | The vendor describes competitor-ad discovery every Monday. |
-| Rerun check 3 | With Meta Ads connected, approved creatives are delivered as paused drafts; otherwise, as an import pack. |
-| Rerun workflow-difference notice | Rerun describes recreating approved blueprints "one to one". Ad Remaker forbids exact copies. This template is not an installation of Ad Remaker and does not inherit its safeguards. |
 | Hermes body | Install the profile from a local clone of this private repository. Repository access is required; public access is pending. Configure your model and enable only the providers you use. |
 | Claude Code body | Install the existing plugin through this repository's marketplace. Repository access is required; public access is pending. Sign in only to the providers you use. |
 
@@ -107,15 +101,33 @@ claude plugin install ad-remaker@ad-remaker
 
 These commands follow the current [README](../../README.md). Public availability is a separate decision from implementation; do not defer the plugin command until a future shipment.
 
-## Links
+## Attribution and comparison for implementation
 
-| Target | URL |
-|---|---|
-| Rerun template, with the maintainer's affiliate code | `https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4` |
+Render the following attribution literally below the hero title:
 
-Vendor source: [Rerun template page](https://rerun.build/templates/recreate-competitor-ads-meta), checked on October 8, 2026. Its page lists the template as free, estimates five minutes of setup, describes Monday discovery and paused Meta drafts, and explicitly offers an import pack when Meta Ads is not connected. These are dated vendor claims, not evidence of a working connection or an end-to-end test. Recheck them before publication. Template pricing does not establish the cost of connected services.
+Inspired by the Recreate competitor ads agent from [Rerun](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4). If you want the same agent without installing or configuring anything, use Rerun directly.
 
-External links open in a new tab with `rel="noopener"`. Disclose the affiliate link wherever the site's legal pages require it.
+This is an independent, unofficial adaptation. According to the maintainer, the marketing team (Théo) authorized an open-source release on October 8, 2026, provided attribution is included. These are affiliate links: the maintainer may earn a commission.
+
+Render the same comparison as the README, including its dated source links and prerequisite note:
+
+### Which version should you choose?
+
+Rerun is the simple option if you want to get started without a terminal. The plugin and profile let you use your existing environment.
+
+| Criterion | [Rerun](https://rerun.build?via=aRLmG4) | Claude Code plugin | Hermes profile |
+|---|---|---|---|
+| Intended users | Non-technical users who want a ready-to-use agent | People who already use Claude Code | People who run Hermes |
+| Setup time | A few seconds to add the agent; about 5 min for configuration, according to the template page | A few minutes if Claude Code is already configured, plus connections to the services you use (estimate) | A few minutes if Hermes is already configured, plus model selection and connections to the services you use (estimate) |
+| Hosting | Hosted and managed by the service | On the machine where you run Claude Code | On the machine or server where you run Hermes |
+| Cost | Free trial to get started, then a paid subscription; model and service costs depend on usage | Free plugin (MIT); Claude Code access, models, and external services depend on your plans | Free profile (MIT); models, optional hosting, and external services depend on your plans |
+| External tools needed | Higgsfield or Kie AI (or another generator) for generation; TrendTrack is optional for research; Meta Ads is optional for drafts | TrendTrack is optional; Higgsfield or Kie AI (or another connected generator) for generation; Meta Ads is optional; local analysis mode works without a generator | TrendTrack is optional; Higgsfield or Kie AI (or another connected generator) for generation; Meta Ads is optional; local analysis mode works without a generator |
+
+Information checked on October 8, 2026: [template](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4) and [service plans](https://rerun.build/pricing?via=aRLmG4). The free trial requires a payment card. Adding the template does not connect your external accounts. Research can use public ad libraries when TrendTrack is unavailable; delivery provides files for manual import when Meta Ads is unavailable. Plans and requirements may change.
+
+Use only this project's locally authored logo and visuals. Do not reuse the credited service's logo, screenshots, agent-board images, or other visuals. Do not describe this distribution as an official product. Keep the credited service's name inside the attribution and comparison only. Every link to that service must include `?via=aRLmG4`.
+
+External links open in a new tab with `rel="noopener"`. Keep the affiliate disclosure visible beside the attribution and comparison.
 
 ## Hover and motion
 
@@ -131,12 +143,11 @@ All transitions use `cubic-bezier(.2, .8, .2, 1)`, 200 to 500 ms. Disable them u
 | Legend swatches | Scale 1.3 and rotate -8deg |
 | Step cards | Lift 6 px, turn white, soft shadow; the number chip tilts -4deg and scales 1.06 |
 | Guardrail cards | Border turns lime, background lightens slightly, lift 4 px, icon scales 1.15 |
-| Install cards | Lift 6 px with a hard 8 px offset shadow (ink, or lime on the Rerun card); the code block gets a lime inner outline |
+| Install cards | Lift 6 px with a hard 8 px offset shadow (ink); the code block gets a lime inner outline |
 
 ## Open items
 
-- Public access and licensing: the repository is private and its current license is Proprietary. Update access labels and installation guidance only after those decisions change; do not promise an open-source release.
+- Public access: the repository remains private. MIT is declared in `LICENSE` and both manifests. Change access labels only after the maintainer approves publication.
 - Copy review: the implementation text above is a local adaptation, not recovered approved canvas text. Review it before publication.
-- Rerun recommendation: retain the visible third-party distinction and workflow-difference notice. Only recommend it as a compatible Ad Remaker path after its workflow is verified to preserve the no-exact-copy rule. Never weaken `SOUL.md` to resolve this mismatch.
 - The accent blue follows open decision 1 of the logo brief. Keep it in a single variable.
 - A motion design video based on the card stack is planned. Its brief will live in this folder.
