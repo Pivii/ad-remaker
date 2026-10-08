@@ -141,6 +141,8 @@ echo "== Stage 1: static checks"
 check "validator" 0 validator.log python3 "$ROOT/scripts/validate_distribution.py"
 check "MCP fixtures" 0 mcp-fixtures.log python3 "$ROOT/tests/check_mcp_fixtures.py"
 check "smoke regressions (isolated mocks)" 0 smoke-regressions.log python3 "$ROOT/tests/check_smoke_regressions.py"
+check "private setup state (no model)" 0 setup-state.log python3 "$ROOT/tests/check_setup.py"
+check "setup guard regressions (no model)" 0 setup-guard.log python3 "$ROOT/tests/check_setup_chat.py"
 check "Codex guard regressions (no model)" 0 codex-guard.log python3 "$ROOT/tests/check_codex_chat.py"
 check "install script syntax (bash -n)" 0 install-syntax.log bash -n "$ROOT/scripts/install_provider_skills.sh"
 check "install --dry-run pika" 0 dry-run-pika.log "$ROOT/scripts/install_provider_skills.sh" --dry-run pika

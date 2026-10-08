@@ -13,8 +13,12 @@ def main() -> int:
     args = parser.parse_args()
     expected = (ROOT / 'SOUL.md').read_text(encoding='utf-8')
     stale = []
-    for entry in sorted((ROOT / 'skills').glob('*/SKILL.md')):
-        target = entry.parent / 'references/agent-rules.md'
+    targets = [(entry.parent / 'references/agent-rules.md', expected)
+               for entry in sorted((ROOT / 'skills').glob('*/SKILL.md'))]
+    if (ROOT / 'skills/setup/SKILL.md').exists():
+        targets.append((ROOT / 'skills/setup/references/service-readiness.md',
+                        (ROOT / 'docs/service-matrix.md').read_text(encoding='utf-8')))
+    for target, expected in targets:
         if target.exists() and target.read_text(encoding='utf-8') == expected:
             continue
         stale.append(target.relative_to(ROOT).as_posix())

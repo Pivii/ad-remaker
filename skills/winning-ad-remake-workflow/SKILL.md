@@ -11,8 +11,9 @@ Before handling the task, read [the agent rules](references/agent-rules.md), gen
 
 In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
 
+Before a relevant advertising task, read the sibling `setup` Skill and its rule reference, then load private settings. Incomplete setup offers guided choices before research; a confirmed free choice is complete and needs no login. Completed choices are reused without another questionnaire. Follow setup precedence and recovery without silently switching the saved route. Setup itself does not spend or write to provider accounts. Documentation-only pin/source lookups and ordinary coding tasks do not trigger the questionnaire.
 
-Every call to an external provider follows `provider-policy`. Use `providers` to find a vendor's official source and route order. Before each stage below, check which providers are actually connected; a server declared in `config.yaml` with `enabled: false` is not connected. When a stage has none, run it with the `free-fallback-mode` Skill and tell the user which stages use that free path.
+Every call to an external provider follows `provider-policy`. Use `providers` to find a vendor's official source and route order. Before each stage below, check which providers are actually connected; a server declared in `config.yaml` with `enabled: false` is not connected. Apply setup choices first. Use `free-fallback-mode` for an explicitly free stage or an authorized fallback, with a notice. If a preferred provider is unavailable without fallback permission, ask once for that stage's recovery choice without rewriting the preference.
 
 ## 1. Select and classify the reference
 

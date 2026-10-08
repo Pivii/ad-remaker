@@ -46,7 +46,7 @@ Then set a model with `hermes -p ad-remaker model`. Vendor MCP servers ship disa
 
 ### Codex CLI and Desktop
 
-CLI and Desktop are both required targets for issue #22. Codex CLI `0.160.0` is verified. The installed Desktop application is bundle `com.openai.codex`, version `26.930.61225` (build `13520`), with bundled runtime `0.160.1`; headless runtime evidence is recorded in `tests/README.md`. Its actual Plugins Directory and composer flow still require verification before #22 is complete. IDE extension and cloud remain unverified. This plugin adds five Skills, with no bundled MCP servers; local analysis works without vendor accounts. It uses your configured Codex model access. The plugin is free (MIT); model allowance and optional external services depend on your plans.
+CLI and Desktop are both required targets for issue #22. Codex CLI `0.160.0` is verified. The installed Desktop application is bundle `com.openai.codex`, version `26.930.61225` (build `13520`), with bundled runtime `0.160.1`; headless runtime evidence is recorded in `tests/README.md`. Its actual Plugins Directory and composer flow still require verification before #22 is complete. IDE extension and cloud remain unverified. This plugin adds six Skills, with no bundled MCP servers; local analysis works without vendor accounts. It uses your configured Codex model access. The plugin is free (MIT); model allowance and optional external services depend on your plans.
 
 For an authenticated private Git installation:
 
@@ -74,7 +74,7 @@ Start Codex from your own working project, outside the distribution checkout. In
 $ad-remaker:winning-ad-remake-workflow Analyze this competitor ad for my product. No vendors are connected. Prepare the free remake pack and state missing inputs/capabilities.
 ```
 
-The discovered selectors are `ad-remaker:winning-ad-remake-workflow`, `ad-remaker:free-fallback-mode`, `ad-remaker:provider-policy`, `ad-remaker:providers`, and `ad-remaker:meta-ads-usage`. Type `$` and select the Skill in the client. Each entrypoint first reads its generated agent rules and applicable sibling policies. Explicit invocation applies instructions to that task; it does not create a Hermes profile, a Claude subagent, or a global persona. Natural-language selection remains client/model-dependent.
+The discovered selectors are `ad-remaker:winning-ad-remake-workflow`, `ad-remaker:free-fallback-mode`, `ad-remaker:provider-policy`, `ad-remaker:providers`, `ad-remaker:meta-ads-usage`, and `ad-remaker:setup`. Type `$` and select the Skill in the client. Each entrypoint first reads its generated agent rules and applicable sibling policies. Explicit invocation applies instructions to that task; it does not create a Hermes profile, a Claude subagent, or a global persona. Natural-language selection remains client/model-dependent.
 
 To update a Git installation, refresh the tracked ref and reinstall:
 
@@ -119,7 +119,7 @@ The repository is its own one-plugin marketplace. Add it, then install the plugi
 claude plugin marketplace add Pivii/ad-remaker          # the private repository, with your GitHub access
 # or, from a local clone: claude plugin marketplace add /path/to/ad-remaker
 claude plugin install ad-remaker@ad-remaker
-claude plugin details ad-remaker@ad-remaker             # 5 Skills, 1 agent, 5 MCP servers
+claude plugin details ad-remaker@ad-remaker             # 6 Skills, 1 agent, 5 MCP servers
 ```
 
 To try it for one session without installing, run `claude --plugin-dir /path/to/ad-remaker`.
@@ -132,7 +132,7 @@ The plugin provides:
 
 #### Use only the vendors you pay for
 
-Claude Code has no `enabled: false` for a plugin's MCP servers: all five start when the plugin is enabled. Each one uses OAuth, so it stays unauthenticated and does nothing until you sign in with `claude mcp login plugin:ad-remaker:<name>` or from `/mcp`. Without a paid account, sign in to nothing: the agent follows `free-fallback-mode`.
+Claude Code has no `enabled: false` for a plugin's MCP servers: all five start when the plugin is enabled. Each one uses OAuth, so it stays unauthenticated and does nothing until you sign in with `claude mcp login plugin:ad-remaker:<name>` or from `/mcp`. Without a paid account, choose the free route in setup and sign in to nothing; the agent follows `free-fallback-mode`.
 
 To stop Claude Code from connecting to a vendor you do not pay for, either turn the server off in `/mcp` (per project), or block it everywhere with `deniedMcpServers` in your own `~/.claude/settings.json`, one entry per vendor:
 
@@ -186,6 +186,12 @@ claude plugin marketplace add ~/vendor/Pika-Plugins && claude plugin install pik
 Keep the clone: Claude Code loads a marketplace added from a local path in place. To move to a new pin, check out the new commit after updating the pin table.
 
 Pika's plugin declares its own `pika` MCP server with the same URL as this plugin's; with both plugins installed, Claude Code 2.1.288 listed only one `pika` server. Higgsfield's and fal.ai's Skills tell the agent to install their CLI with `curl ... | sh`. The Hermes skills guard blocks them (ADR-002); Claude Code has no such guard, so `provider-policy` applies: the user approves that exact command, or runs it themselves.
+
+## First run / Setup
+
+On your first relevant ad task, Ad Remaker offers free research and script/storyboard/prompts, or guides connecting services you already use. **Free for everything** completes setup with no login; it does not render a new video from prompts. Choices persist outside Git/plugin caches, while each product keeps its own confirmed brief. Selecting a provider never authorizes spending.
+
+Run `/ad-remaker:setup` in Claude Code, ask Hermes to use its `setup` Skill, or invoke `$ad-remaker:setup` in Codex. Rerun it to edit tools, product context or both. Automatic discovery depends on the client/model; use this explicit entrypoint if onboarding does not appear. See [the setup guide](docs/setup.md) for routes, connections, private state and recovery.
 
 ## Established principles
 

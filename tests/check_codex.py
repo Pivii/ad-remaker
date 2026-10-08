@@ -186,6 +186,13 @@ def check(source: str | None = None, ref: str | None = None) -> None:
         assert configured['transport']['url'] == pika_url and configured['enabled'] is False, configured
         subprocess.run([binary(), 'mcp', 'remove', 'pika'], cwd=work, env=env, check=True, capture_output=True)
         print('PASS vendor opt-in/disable/remove configuration parsed; no login or provider call')
+        # Preferences are outside cache, so replacing the package preserves them.
+        state = root / 'private-state'
+        helper = ROOT / 'skills/setup/scripts/setup_state.py'
+        state_args = [sys.executable, str(helper), '--runtime', 'codex', '--state-dir', str(state.resolve()), '--project', str(work.resolve())]
+        subprocess.run(state_args + ['choose', '--free'], check=True, capture_output=True)
+        subprocess.run(state_args + ['complete'], check=True, capture_output=True)
+        preference_bytes = (state / 'setup.json').read_bytes()
         # Upgrade refreshes a Git snapshot; add reinstalls the selected version.
         if source:
             upgrade = command(env, work, 'plugin', 'marketplace', 'upgrade', 'ad-remaker', '--json')
@@ -200,7 +207,8 @@ def check(source: str | None = None, ref: str | None = None) -> None:
         cached = Path(updated['installedPath'])
         if not source:
             assert updated['version'].endswith('-update-check'), updated
-        print('PASS update by reinstall: ' + updated['version'])
+        assert (state / 'setup.json').read_bytes() == preference_bytes
+        print('PASS update by reinstall: ' + updated['version'] + '; private completed preferences unchanged')
         command(env, work, 'plugin', 'remove', PLUGIN, '--json')
         listing = command(env, work, 'plugin', 'list', '--marketplace', 'ad-remaker', '--json')
         assert not any(p['pluginId'] == PLUGIN for p in listing['installed'])

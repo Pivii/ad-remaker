@@ -11,6 +11,7 @@ Before handling the task, read [the agent rules](references/agent-rules.md), gen
 
 In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
 
+Before a relevant advertising task, read the sibling `setup` Skill and its rule reference, then load private settings. Incomplete setup offers guided choices before research; a confirmed free choice is complete and needs no login. Completed choices are reused without another questionnaire. Follow setup precedence and recovery without silently switching the saved route. Setup itself does not spend or write to provider accounts. Documentation-only pin/source lookups and ordinary coding tasks do not trigger the questionnaire.
 
 These rules apply to every external provider, whatever the route (MCP tools, CLI, or REST) and whether or not an official vendor Skill is installed. When an installed vendor Skill conflicts with this policy, this policy wins. Use `providers` to find the official source and route order for a vendor.
 
@@ -24,7 +25,7 @@ These rules apply to every external provider, whatever the route (MCP tools, CLI
 
 ## 2. When nothing is connected
 
-If no provider is available for a stage, say so explicitly and switch to the free path in `free-fallback-mode`: native tools, local processing, and free public sources. A server declared in `config.yaml` with `enabled: false` is not available. Never claim a capability that is not connected, such as private metrics, ROAS, or rendering.
+After loading setup choices, use the free path in `free-fallback-mode` when explicitly selected or when a saved fallback permission allows it, with a notice: native tools, local processing, and free public sources. If a preferred provider is unavailable and fallback is not authorized, explain the blocker and ask for this stage's recovery choice. Never silently assign or replace a durable route. A server declared in `config.yaml` with `enabled: false` is not available. Never claim a capability that is not connected, such as private metrics, ROAS, or rendering.
 
 ## 3. Approval before spend
 
