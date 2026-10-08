@@ -24,7 +24,7 @@ codex plugin list --marketplace ad-remaker --json
 
 For Desktop, the same marketplace registration is required so the plugin remains discoverable outside the package directory. The bundled Desktop backend accepts the existing compatibility catalog. After installation, restart or refresh the Desktop client, select the registered `ad-remaker` source in its Plugins Directory, and check that the six Skills appear in a new project outside this repository. This interface flow has not been verified yet. Users do not need to inspect the application version as an installation step.
 
-Your Git client must already have access to the private repository. Use existing Git authentication rather than credentials embedded in a repository URL. No vendor login is needed. Codex retains installer-created `.git` metadata in its private Git plugin cache on the tested client; the clean local export below has no Git metadata. Ignored worktrees, credentials and user runtime data are excluded in both tests. For a local checkout, export a clean package first; do not install a live development clone, because Codex can copy ignored files into its cache:
+The repository is public, so no Git authentication is needed to install. Never embed credentials in a repository URL. No vendor login is needed. Codex retains installer-created `.git` metadata in its private Git plugin cache on the tested client; the clean local export below has no Git metadata. Ignored worktrees, credentials and user runtime data are excluded in both tests. For a local checkout, export a clean package first; do not install a live development clone, because Codex can copy ignored files into its cache:
 
 ```bash
 python3 /path/to/ad-remaker/scripts/export_codex_package.py /path/outside/repo/ad-remaker-codex

@@ -9,7 +9,7 @@ Provenance: visual tokens, typography, section order, and motion were transcribe
 
 ## Goal
 
-Present Ad Remaker in one scroll. Place the attribution immediately below the hero title and the comparison before the local installation commands. The hosted option is the simple path for people who do not use a terminal. This independent distribution provides a Claude Code plugin, a Codex plugin, and a Hermes profile under MIT. After installation, the page shows how to start the agent and three example prompts, then invites contributions. The repository remains private pending maintainer approval.
+Present Ad Remaker in one scroll. Place the attribution immediately below the hero title and the comparison before the local installation commands. The hosted option is the simple path for people who do not use a terminal. This independent distribution provides a Claude Code plugin, a Codex plugin, and a Hermes profile under MIT. After installation, the page shows how to start the agent and three example prompts, then invites contributions. The repository is public since October 8, 2026.
 
 ## Tokens
 
@@ -47,9 +47,9 @@ Content width 1200 px max, 24 px side gutter. Every row wraps to one column on a
 3. **How it works, `#how`.** H2 "From an ad reference to your own, in six steps." Under the H2, the setup lead-in from the copy table. Six cards (min 300 px), with titles and descriptions from the copy table. Step 04 is the only ink card, with the chip "04 · YOU APPROVE".
 4. **Guardrails, `#rules`, ink background.** H2 "It works for you. It never spends for you." Four cards with a lime stroke icon, titled "Never an exact copy", "No invented claims", "Approval before any spend", and "Nothing goes live alone", with descriptions from the copy table. Display the scope note directly below the heading: these rules apply to Ad Remaker's Hermes profile, Claude Code plugin, and Codex plugin.
 5. **Choose a version, `#install`.** H2 "Which version should you choose?". Render the comparison below with four option columns and one row-label column. Preserve the option order: hosted service, Claude Code plugin, Codex plugin, Hermes profile. On phones, allow horizontal table scrolling with visible row labels, or render equivalent labeled cards. Place the hosted-service link and its affiliate disclosure inside this comparison. Follow it with three local installation cards (min 320 px):
-   - **Claude Code plugin**, chip "Public access pending", body from the copy table, code block with the two commands in the installation section below.
-   - **Codex plugin**, chip "Public access pending", body from the copy table, code block with the two Codex commands in the installation section below.
-   - **Hermes profile**, chip "Public access pending", body from the copy table, code block `hermes profile install /path/to/ad-remaker --yes`.
+   - **Claude Code plugin**, chip "Public", body from the copy table, code block with the two commands in the installation section below.
+   - **Codex plugin**, chip "Public", body from the copy table, code block with the two Codex commands in the installation section below.
+   - **Hermes profile**, chip "Public", body from the copy table, code block `hermes profile install /path/to/ad-remaker --yes`.
 6. **Try it, `#try`.** H2 "Try it with three prompts." Below it, a platform switcher with three tabs in this order: Claude Code, Codex, Hermes. Render it as an accessible tab list (`role="tablist"`, arrow keys move between tabs); tab buttons use the 999 px radius, the active tab is ink with white text, inactive tabs are paper with a line border. Each tab shows the start line from "Usage prompts for implementation" below in a code block, followed by the small line "First run: a short setup lets you choose free tools or services you already use. Start it any time with <setup entrypoint>." with that tab's setup entrypoint in JetBrains Mono, then three prompt cards (min 300 px, soft surface, 24 px radius): a JetBrains Mono label `01`, `02`, `03`, the prompt title, the prompt in a code block, and the "what to expect" line. In the Codex tab, prefix each prompt with `$ad-remaker:winning-ad-remake-workflow ` exactly as shown below. Close the section with the sentence "Approval questions before any spend or publication are expected behavior." and a text link "More examples in the README" to the repository README.
 7. **Contribute, `#contribute`, ink background.** H2 "Help build it." Body from the copy table, then two buttons: lime "Read the contributing guide" linking to `CONTRIBUTING.md` on GitHub (`https://github.com/Pivii/ad-remaker/blob/main/CONTRIBUTING.md`) and ghost "Browse open issues" linking to `https://github.com/Pivii/ad-remaker/issues`.
 8. **Footer.** Wordmark and the line "Analyze the mechanics. Rebuild for your product. You approve every spend."
@@ -85,9 +85,9 @@ The following locally authored text completes the handoff. Use it literally when
 | No invented claims description | Use evidence for product claims, testimonials, and results. Report what remains unknown. |
 | Approval before any spend description | Approve the exact paid batch before generation. Campaign spend needs separate approval. |
 | Nothing goes live alone description | Publication, activation, and scheduling each require explicit approval. |
-| Hermes body | Install the profile from a local clone of this private repository. Repository access is required; public access is pending. Configure your model and enable only the providers you use. |
-| Claude Code body | Install the existing plugin through this repository's marketplace. Repository access is required; public access is pending. Sign in only to the providers you use. |
-| Codex body | Install the plugin through this repository's marketplace in Codex CLI or Desktop. Repository access is required; public access is pending. It bundles no provider connections. |
+| Hermes body | Install the profile from a local clone of this public repository. Configure your model and enable only the providers you use. |
+| Claude Code body | Install the existing plugin through this repository's marketplace. Sign in only to the providers you use. |
+| Codex body | Install the plugin through this repository's marketplace in Codex CLI or Desktop. It bundles no provider connections. |
 | Contribute body | Ad Remaker is open source under MIT. Add a free research source, improve a Skill, fix the docs, or report what happened in a real run. |
 
 ## Current installation instructions
@@ -98,7 +98,7 @@ The Hermes command assumes an authorized local clone; replace `/path/to/ad-remak
 hermes profile install /path/to/ad-remaker --yes
 ```
 
-The Claude Code plugin already exists. Both commands are needed for a first installation, and access to the private GitHub repository is required:
+The Claude Code plugin already exists. Both commands are needed for a first installation:
 
 ```bash
 claude plugin marketplace add Pivii/ad-remaker
@@ -176,9 +176,9 @@ All transitions use `cubic-bezier(.2, .8, .2, 1)`, 200 to 500 ms. Disable them u
 
 ## Open items
 
-- Public access: the repository remains private. MIT is declared in `LICENSE` and both manifests. Change access labels only after the maintainer approves publication.
+- Public access: the repository is public since October 8, 2026. MIT is declared in `LICENSE` and the manifests.
 - Copy review: the implementation text above is a local adaptation, not recovered approved canvas text. Review it before publication.
 - The accent blue follows open decision 1 of the logo brief. Keep it in a single variable.
 - A motion design video based on the card stack is planned. Its brief will live in this folder.
-- Repository links: the contributing guide and issues links work only for people with repository access until publication is approved.
+- Repository links: the contributing guide and issues links are public.
 - Codex Desktop: the install card covers CLI and Desktop. The Desktop Plugins Directory and Skill selection in its interface are not verified yet; see `docs/codex-setup.md`.

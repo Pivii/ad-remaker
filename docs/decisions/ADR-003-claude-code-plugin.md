@@ -16,6 +16,8 @@ The repository root is also a Claude Code plugin named `ad-remaker`:
 
 - `.claude-plugin/plugin.json` is the manifest. Its `version` always equals `version` in `distribution.yaml`.
 - `.claude-plugin/marketplace.json` lists this repository as a one-plugin marketplace, so `claude plugin marketplace add` and `claude plugin install` work from the private repository or a local clone. It is not a public marketplace.
+
+  Update, October 8, 2026: the repository is now public, so the marketplace can be added without repository access. It is still not listed in any public plugin directory.
 - `skills/` is loaded as is.
 - `agents/ad-remaker.md` is the `ad-remaker` subagent. It is generated: its frontmatter is written by hand, and its body is `SOUL.md` verbatim. `scripts/sync_claude_agent.py` rewrites the body from `SOUL.md`, and `scripts/validate_distribution.py` fails when the body differs. `SOUL.md` stays the single source of the agent prompt; never edit the body of the subagent by hand.
 - `.mcp.json` declares the same servers as `config.yaml` `mcp_servers`, under the same names and URLs, with no secrets. The validator fails when the two server sets or URLs differ.

@@ -20,3 +20,7 @@ Secrets, brand data, memories, sessions, and work outputs remain specific to eac
 - The main profile is not cloned, so its Skills and memories do not contaminate Ad Remaker.
 - Integrations must be declared without secrets and verified in the installed profile.
 - The repository must remain compatible with the Hermes distribution format.
+
+## Update, October 8, 2026
+
+The repository is now public under MIT. Installation and updates no longer need repository access. The rest of this decision is unchanged.

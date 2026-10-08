@@ -17,7 +17,7 @@ Ad Remaker finds competitor ads that show public performance signals, deconstruc
 | `config.yaml` | Credential-free Hermes defaults and the declared MCP servers (`mcp_servers`, all `enabled: false`) | Hermes |
 | `cron/jobs.json` | Distributed scheduled jobs, currently none | Hermes |
 | `.claude-plugin/plugin.json` | Claude Code plugin manifest; `version` equals `distribution.yaml` | Claude Code |
-| `.claude-plugin/marketplace.json` | One-plugin marketplace serving this repository, not public | Claude Code |
+| `.claude-plugin/marketplace.json` | One-plugin marketplace serving this repository, not listed in a public directory | Claude Code |
 | `agents/ad-remaker.md` | Claude Code subagent: hand-written frontmatter, body generated from `SOUL.md` | Generated, do not edit the body |
 | `.mcp.json` | Claude Code MCP servers, same names and URLs as `config.yaml` `mcp_servers` | Claude Code |
 | `skills/<name>/SKILL.md` | Operational Skill (YAML frontmatter `name` + `description`) | Agent Skills standard |
