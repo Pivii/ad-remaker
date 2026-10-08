@@ -60,6 +60,7 @@ REQUIRED_FILES = (
     "tests/README.md",
     "tests/check_mcp_fixtures.py",
     "tests/fixtures/README.md",
+    "tests/smoke.sh",
 )
 
 FORBIDDEN_REPORT = "docs/ad-remaker-fonctionnement-complet.md"
