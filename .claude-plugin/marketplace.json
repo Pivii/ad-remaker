@@ -1,0 +1,14 @@
+{
+  "name": "ad-remaker",
+  "owner": {
+    "name": "Pierre (Pivii)"
+  },
+  "description": "Private marketplace that serves the Ad Remaker plugin from this repository.",
+  "plugins": [
+    {
+      "name": "ad-remaker",
+      "source": "./",
+      "description": "Ad Remaker subagent, Skills, and vendor MCP server declarations for Claude Code."
+    }
+  ]
+}

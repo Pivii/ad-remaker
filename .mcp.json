@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "trendtrack": {
+      "type": "http",
+      "url": "https://api.trendtrack.io/v1/mcp"
+    },
+    "higgsfield": {
+      "type": "http",
+      "url": "https://mcp.higgsfield.ai/mcp"
+    },
+    "pika": {
+      "type": "http",
+      "url": "https://mcp.pika.me/api/mcp"
+    },
+    "fal": {
+      "type": "http",
+      "url": "https://mcp.fal.ai/mcp-relay"
+    },
+    "meta_ads": {
+      "type": "http",
+      "url": "https://mcp.facebook.com/ads"
+    }
+  }
+}

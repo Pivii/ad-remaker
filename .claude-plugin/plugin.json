@@ -1,0 +1,17 @@
+{
+  "name": "ad-remaker",
+  "displayName": "Ad Remaker",
+  "version": "0.6.0",
+  "description": "Find competitor ads with public performance signals, deconstruct their creative mechanics, and adapt them to a brand's real product, with human approval before any spend or publication.",
+  "author": {
+    "name": "Pierre (Pivii)"
+  },
+  "repository": "https://github.com/Pivii/ad-remaker",
+  "license": "Proprietary",
+  "keywords": [
+    "advertising",
+    "ad-remake",
+    "creative-analysis",
+    "meta-ads"
+  ]
+}
