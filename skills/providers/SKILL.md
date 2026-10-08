@@ -1,6 +1,6 @@
 ---
 name: providers
-description: Use when choosing, installing, or routing to an external provider (Brandsearch, TrendTrack, Higgsfield, Kie.ai, Pika, fal.ai, Meta Ads). Lists each vendor's official Skill or documentation source, pinned ref, license, route order, and the date the source was checked.
+description: Use when choosing, installing, or routing to an external provider (Brandsearch, TrendTrack, Higgsfield, Kie.ai, Pika, fal.ai, Meta Ads, ffmpeg-skill). Lists each vendor's official Skill or documentation source, pinned ref, license, route order, and the date the source was checked.
 ---
 
 # Providers
@@ -14,7 +14,8 @@ Every source, license, and route below was checked on the date in the table. Tre
 This table is the single source of truth for vendor Skill pins. `scripts/install_provider_skills.sh` reads it, and `scripts/validate_distribution.py` checks its shape. Keep one row per vendor and no `|` inside cells.
 
 - `Pinned ref` is a full 40-character commit SHA, or `none` when there is no vendor source that can be pinned.
-- `Install` is `hermes` when the script installs the pinned vendor Skill into the profile, or `no` when it refuses. A `no` row with a pin is a thin entry: the pinned commit is the source to read, not something to install.
+- `Install` is `hermes` when the script installs the pinned vendor Skill into the profile, or `no` when it refuses. This column governs Hermes only. A `no` row with a pin can be a source to read or a Claude Code-only tool, as its entry explains.
+- `Skill path` is relative to the repository; `.` means its root.
 
 <!-- provider-pins:begin -->
 | Vendor | Repository | Skill path | Pinned ref | Install | License | Checked |
@@ -26,13 +27,14 @@ This table is the single source of truth for vendor Skill pins. `scripts/install
 | trendtrack | none | none | none | no | not applicable | 2026-10-07 |
 | brandsearch | none | none | none | no | not applicable | 2026-10-07 |
 | meta-ads | none | none | none | no | not applicable | 2026-10-08 |
+| ffmpeg-skill | kajisho5/ffmpeg-skill | . | 008333aaf6722083392eb6bd8bd67b59884a2a26 | no | MIT | 2026-10-08 |
 <!-- provider-pins:end -->
 
-None of the vendor repositories had a release tag on 2026-10-07, so every pin is a commit on the default branch.
+The paid vendor repositories checked on 2026-10-07 had no release tag, so their pins are commits. The optional community tool ffmpeg-skill is also pinned by commit.
 
 ## Installing vendor Skills
 
-Install only the vendors you pay for. A user in free mode installs nothing.
+For Hermes, install only the vendors you pay for. Free mode needs no vendor Skill. Claude Code users may separately install the optional free local ffmpeg-skill at its pin, following the root `README.md`; it is never installed into Hermes.
 
 ```bash
 scripts/install_provider_skills.sh pika                    # into the ad-remaker profile
@@ -51,7 +53,7 @@ Updating is a deliberate change, never automatic:
 
 1. Read the vendor's diff between the current pin and the new commit, and re-check the license.
 2. Change `Pinned ref`, `License`, and `Checked` in the table, and bump `version` in `distribution.yaml`.
-3. Reinstall with the script, which runs `hermes skills audit`. External Skills run with the agent's permissions, so review the audit before using the Skill.
+3. For Hermes-installable rows, reinstall with the script, which runs `hermes skills audit`. For Claude Code-only tools, repeat the pinned install in the root `README.md`. External Skills run with the agent's permissions, so review their source before using them.
 
 A thin entry with a pin (Higgsfield, fal.ai) can move back to `Install` `hermes` once the vendor Skill at the new commit passes the Hermes skills guard, for example after the vendor drops `curl | sh` from it. Check with `hermes skills inspect <pinned url>` and a scratch profile install first.
 
@@ -66,7 +68,7 @@ A dangerous verdict cannot be overridden: in Hermes v0.20.2, `should_allow_insta
 
 ## Vendors
 
-Route order lists the routes a vendor offers, in the order to try them. Use a route only when it is connected and authenticated, as `provider-policy` requires.
+Route order lists the routes a vendor offers, in the order to try them. Use an external service route only when it is connected and authenticated, as `provider-policy` requires. The local ffmpeg-skill route needs no account; its installed-script and dependency checks still apply.
 
 ### Higgsfield
 
@@ -118,3 +120,10 @@ Route order lists the routes a vendor offers, in the order to try them. Use a ro
 - CLI install, from Meta's Ads CLI get-started page on 2026-10-08, run only with the user's approval: `pip install meta-ads`, then `uv sync`. Python 3.12 or later.
 - Route order for campaigns, ad sets, and ads: MCP (`https://mcp.facebook.com/ads`, declared as `meta_ads` in `config.yaml`), then CLI (`meta`, with `ACCESS_TOKEN` and `AD_ACCOUNT_ID`). Both reach only the user's own ad accounts.
 - Route order for Ad Library research: the MCP tool `ads_library_search`, which reads the public Meta Ad Library, then the Ad Library website as the free path. The tool's limits compared with the Ad Library API are unverified.
+
+### ffmpeg-skill (optional, Claude Code only)
+
+- Community source, not an official FFmpeg Skill: [`kajisho5/ffmpeg-skill` at the pinned commit](https://github.com/kajisho5/ffmpeg-skill/tree/008333aaf6722083392eb6bd8bd67b59884a2a26), version 2.5.1, root `SKILL.md`; MIT from its `LICENSE`, checked 2026-10-08. It drives local FFmpeg with Python 3.9 or later; no account, cloud API, or paid credits are required.
+- Install separately in a Claude Code working project, outside this distribution, using the pinned command in the root `README.md`. Not bundled, not a dependency, and no optional upstream MCP server is declared here.
+- `Install` is `no` for Hermes: the URL installer aborts on literal `scripts/*.py`, and the GitHub source requires a sub-path. The guard never ran, so its verdict is **unknown**, not SAFE or dangerous (ADR-004). Never copy its Skill into Hermes or use `npx ffmpeg-skill` to bypass the guard.
+- Route: installed local scripts only when the actual script and its required dependencies are available. Analysis uses `scenes.py`, `look.py`, `cut.py --segments`, and optionally `caption.py --transcribe`; finishing uses `fit.py`, `caption.py`, `redact.py`, `render.py`, and `check.py`. Follow the gated recipes in `free-fallback-mode` section 4 and the workflow's QC rules. Otherwise use our local analysis scripts and existing transcription path; report finishing gaps explicitly.

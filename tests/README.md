@@ -30,6 +30,8 @@ Check the provider install script without installing anything:
 bash -n scripts/install_provider_skills.sh
 scripts/install_provider_skills.sh --dry-run pika                   # prints the pinned commands, exit 0
 scripts/install_provider_skills.sh --dry-run higgsfield fal kie-ai  # not installable with Hermes, exit 3
+scripts/install_provider_skills.sh --dry-run ffmpeg-skill           # Claude Code only, exit 3
+scripts/install_provider_skills.sh --dry-run pika ffmpeg-skill      # exit 3, no install commands
 scripts/install_provider_skills.sh --dry-run acme                   # unknown vendor, exit 2
 ```
 
@@ -73,3 +75,45 @@ claude plugin details ad-remaker@ad-remaker            # Skills (5), Agents (1) 
 claude mcp list                                        # 5 plugin:ad-remaker:* servers, each "Needs authentication"
 rm -rf "$CLAUDE_CONFIG_DIR"; unset CLAUDE_CONFIG_DIR
 ```
+
+
+## Optional ffmpeg-skill check (Claude Code only)
+
+On 2026-10-08, issue #13 verified version 2.5.1 at `008333aaf6722083392eb6bd8bd67b59884a2a26` in a scratch Claude Code project outside the distribution. The exact pinned `npx --yes skills add` command in the root `README.md` exited 0. The installed `SKILL.md`, `LICENSE`, scripts, references, and templates (75 files) matched the detached upstream commit byte-for-byte; the project's `skills-lock.json` recorded that exact `ref`. No upstream files or test media were copied into this repository.
+
+The synthetic fixture is four seconds of black followed by white, 320x180 at 30 fps with a 440 Hz mono tone. It contains no customer data or competitor assets. To reproduce the supported smoke checks, use a throwaway project outside the distribution, after reviewing the install command:
+
+```bash
+mkdir -p <scratch-project>
+cd <scratch-project>
+npx --yes skills add https://github.com/kajisho5/ffmpeg-skill/tree/008333aaf6722083392eb6bd8bd67b59884a2a26 --agent claude-code --skill ffmpeg-skill --yes
+FFMPEG_SCRIPTS="$PWD/.claude/skills/ffmpeg-skill/scripts"
+python3 "$FFMPEG_SCRIPTS/_contract.py" doctor --json > doctor.json
+# A partial machine may return 1; read per-tool usable/missing before continuing.
+ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=black:s=320x180:r=30:d=2 -f lavfi -i color=c=white:s=320x180:r=30:d=2 -f lavfi -i sine=frequency=440:sample_rate=48000:duration=4 -filter_complex '[0:v][1:v]concat=n=2:v=1:a=0[v]' -map '[v]' -map 2:a -c:v libx264 -pix_fmt yuv420p -g 30 -c:a aac -map_metadata -1 -shortest synthetic.mp4
+python3 "$FFMPEG_SCRIPTS/scenes.py" synthetic.mp4 --sheet scenes.png --no-timecode --json > scenes.json
+python3 "$FFMPEG_SCRIPTS/look.py" synthetic.mp4 --tiles 3x2 --no-timecode -o look.png --json > look.json
+python3 "$FFMPEG_SCRIPTS/cut.py" synthetic.mp4 --segments 0-2 --accurate -o segment.mp4 --json > cut.json
+python3 "$FFMPEG_SCRIPTS/fit.py" synthetic.mp4 --aspect 9:16 --fit pad -o vertical.mp4 --json > fit.json
+python3 "$FFMPEG_SCRIPTS/redact.py" synthetic.mp4 --x 0 --y 0 --width 40 --height 40 --mode blur -o redacted.mp4 --json > redact.json
+python3 "$FFMPEG_SCRIPTS/render.py" --template reels synthetic.mp4 -o final-reels.mp4 --json > render-reels.json
+python3 "$FFMPEG_SCRIPTS/check.py" final-reels.mp4 --platform reels --json > check-reels.json
+python3 "$FFMPEG_SCRIPTS/render.py" --template tiktok synthetic.mp4 -o final-tiktok.mp4 --json > render-tiktok.json
+python3 "$FFMPEG_SCRIPTS/check.py" final-tiktok.mp4 --platform tiktok --json > check-tiktok.json
+```
+
+Use fresh output paths for a repeat run; these scripts refuse existing outputs. Results observed on the test host, Python 3.11.5 and FFmpeg/ffprobe 8.1:
+
+| Check | Observed result |
+|---|---|
+| `doctor --json` | Exit 1, `ok: false`; `drawtext`, `subtitles`, `vidstabdetect`, `vidstabtransform`, and default DejaVu Sans font unavailable. Optional `ass`, `zscale`, and `libvorbis` also absent. Per-tool scenes/look/cut/fit/redact/render/check usable. No dependencies or models installed. |
+| Scenes and look | Exit 0; scenes are 0-2 s and 2-4 s, PNGs nonempty. Look probes verified and shows three black tiles followed by three white tiles; pixels inspected. `scenes.json` reports `verified: false` because it is a measurement, not a verified deliverable. |
+| Cut, fit, redact | Exit 0, outputs probe verified. Cut: 2.021 s; fit: 102x180 (rounded even frame), 4.010 s; blur: measured 40x40 region, 320x180, 4.010 s. This tests the CLI, not removal of a real competitor trace. |
+| Reels and TikTok templates | Exit 0, without supplied captions or graphics. Both output 1080x1920, 30 fps, H264/AAC mono, 4.010 s; `check.py` exits 0 with no FAIL rows; the subtitle row WARNs because these fixtures have no caption stream. Reels contact sheet generated with `look.py --no-timecode` and pixels inspected. Nothing published. |
+| Our distributed fallback | `frame_sheet.py` and `first_three_seconds_sheet.py` exit 0, JPEG/CSV pairs nonempty. `cut_list.py` and `shot_clips.py` exit 3 with `required tool not found on PATH: scenedetect`; no implicit install or missing artifacts claimed. |
+
+Caption burning and transcription were not exercised: this FFmpeg lacks `subtitles`, and no local transcription model was verified or downloaded. Real caption readability, redaction of identifiable content, and creative QC require the actual asset and human inspection. No agent chat or model call was run, so automatic natural-language routing is not behaviorally verified; routing gates and fallbacks were checked in the operating Skills.
+
+Distribution 0.7.0 validation passed under both the stdlib parser (`python3`, also `python3 -S`) and PyYAML (existing Hermes venv Python). All 11 MCP fixtures passed under both parsers. Provider installer dry runs returned 3 for `ffmpeg-skill` and mixed `pika ffmpeg-skill`, with no install command printed; Pika's existing pinned install and audit commands were unchanged, exit 0; unknown vendor `acme` returned 2. `bash -n` and `git diff --check` passed.
+
+Both Claude Code manifests validated; the plugin manifest had only the expected root `CLAUDE.md` warning. An isolated `CLAUDE_CONFIG_DIR` marketplace install loaded Ad Remaker 0.7.0 with 5 Skills, 1 agent, and the existing 5 MCP declarations; ffmpeg-skill remained separately installed in the scratch project. In a separate isolated `HERMES_HOME`, `hermes profile install <worktree> --name ad-remaker-issue13-scratch --yes`, `profile show`, `skills list`, and `mcp list` loaded 0.7.0 with 5 enabled local Skills, no hub Skills, and all 5 MCP servers disabled. No live connection or chat was tested, and the maintainer's profiles/configuration were untouched.
