@@ -89,7 +89,7 @@ python3 "$SCRIPTS/first_three_seconds_sheet.py" "<work-dir>/reference.mp4" "<wor
 python3 "$SCRIPTS/shot_clips.py" "<work-dir>/reference.mp4" "<work-dir>/analysis"
 ```
 
-The sheets carry no burned-in labels; read each tile's timestamp from the matching CSV. Exit code 3 means a dependency is missing, 2 means bad input, 1 means processing failed.
+The sheets carry no burned-in labels; read each tile's timestamp from the matching CSV. Re-running a script into the same directory replaces its own outputs: `shot_clips.py` first deletes earlier `shot-NNN.mp4` files in `shots/` and leaves any other file there untouched. Clips of odd-sized videos are cropped by at most one pixel to an even size. Exit code 3 means a dependency is missing, 2 means bad input, 1 means processing failed.
 
 Transcribe with whichever Whisper-family tool is already installed:
 
