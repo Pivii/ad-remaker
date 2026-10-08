@@ -6,6 +6,7 @@ import json
 import hashlib
 import os
 from pathlib import Path
+import re
 import shlex
 import shutil
 import subprocess
@@ -13,6 +14,7 @@ import sys
 import tempfile
 
 from check_codex import ROOT, PLUGIN, command, export, config_fingerprint, binary
+from check_codex_chat import UNQUOTED_APPROVAL, UNQUOTED_REFUSAL, UNQUOTED_ACCEPTED
 from setup_guard import helper_command
 
 
@@ -39,7 +41,7 @@ def main():
     parser.add_argument('--chat', action='store_true')
     parser.add_argument('--runtime', choices=['codex', 'claude'], default='codex')
     parser.add_argument('--keep', action='store_true')
-    parser.add_argument('--scenario', choices=['guard-canary', 'first', 'free', 'repeat', 'second-product', 'mock-connected', 'mock-failed', 'explicit-and-connections', 'infer-product'], help='Only this scenario (all by default); state prerequisites seeded by deterministic helper')
+    parser.add_argument('--scenario', choices=['guard-canary', 'first', 'free', 'repeat', 'second-product', 'mock-connected', 'mock-failed', 'explicit-and-connections', 'infer-product', 'unquoted-approval'], help='Only this scenario (all by default); state prerequisites seeded by deterministic helper')
     args = parser.parse_args(); guard_checks()
     if not args.chat:
         print('SKIPPED setup model behavior: --chat uses existing subscription allowance only.'); return 0
@@ -118,6 +120,8 @@ def main():
             ('first', 'Use Ad Remaker to analyze the ads of my competitors.', work),
             ('free', 'Use your setup Skill. I choose free for everything. Save that choice and complete setup, explain the render limitation, then resume my original request: analyze competitor ads for Product A. My product brief is not yet confirmed.', work),
             ('repeat', 'Use Ad Remaker to analyze Product A competitors. Load my saved choices. Do not repeat tools onboarding; ask only for missing product inputs. No providers are connected.', work),
+            # Issue #28, after `repeat` so the saved routes are still all free.
+            ('unquoted-approval', UNQUOTED_APPROVAL, work),
             ('infer-product', 'Use Ad Remaker setup for product context in this project. Read the relevant README, propose its product facts and ask me to confirm them before saving. Do not treat its unsupported productivity claim as approved.', work),
             ('second-product', 'Use your setup Skill for product context only. My confirmed product is Product B, audience builders, competitor B Rival, approved claims none. Save this confirmed brief under product ID b. Keep my tools choices. Do not scan other repositories.', second),
             ('mock-connected', 'Use your setup Skill for tools only. Test-only mock capability observation: TrendTrack tools are discovered and authenticated, but no documented zero-credit verification exists. I choose TrendTrack research, deferred video, manual files delivery, fallback ask. Save choices; reuse existing auth, no login or service call. Keep status configured/unverified, not verified.', work),
@@ -128,7 +132,7 @@ def main():
             if args.scenario == 'explicit-and-connections':
                 selected.update({'free', 'second-product', 'mock-connected', 'mock-failed'})
             scenarios = [s for s in scenarios if s[0] in selected]
-            if args.scenario in {'repeat', 'second-product', 'mock-connected', 'mock-failed', 'infer-product'}:
+            if args.scenario in {'repeat', 'second-product', 'mock-connected', 'mock-failed', 'infer-product', 'unquoted-approval'}:
                 seed('choose', '--free'); seed('complete')
             if args.scenario == 'mock-failed': seed('choose', '--research', 'trendtrack', '--fallback', 'ask')
         print(f'{args.runtime}: existing subscription model allowance only; no API/vendor billing.')
@@ -143,6 +147,9 @@ def main():
             if name == 'free':
                 selector = '$ad-remaker:setup' if args.runtime == 'codex' else '/ad-remaker:setup'
                 prompt = prompt.replace('Use your setup Skill.', selector, 1)
+            if name == 'unquoted-approval':
+                selector = '$ad-remaker:winning-ad-remake-workflow' if args.runtime == 'codex' else '/ad-remaker:winning-ad-remake-workflow'
+                prompt = prompt.replace('Use your winning-ad-remake-workflow Skill.', selector, 1)
             if name == 'guard-canary':
                 instructions = ''
             if args.runtime == 'codex':
@@ -162,7 +169,9 @@ def main():
                 assert any(r['blocked'] for r in records) and not (work / 'guard-canary').exists(), 'Pre-dispatch guard failed; stop.'
                 print('PASS canary: prohibited shell write blocked before dispatch')
                 continue
-            assert any('setup/' in p or p == 'skill:ad-remaker:setup' for r in records for p in r['reads']), f'{name}: no setup read (implicit discovery not verified); {root}'
+            # The issue #28 prompt continues a session whose setup is already loaded,
+            # so a fresh setup read is not part of what that scenario checks.
+            assert name == 'unquoted-approval' or any('setup/' in p or p == 'skill:ad-remaker:setup' for r in records for p in r['reads']), f'{name}: no setup read (implicit discovery not verified); {root}'
             for record in records:
                 if record['blocked']:
                     cmd = json.dumps(record.get('input', {})).lower()
@@ -177,6 +186,10 @@ def main():
             elif name == 'repeat':
                 assert state and state['complete'] and set(state['routes'].values()) == {'free'}
                 assert 'free' in reply or 'public' in reply
+            elif name == 'unquoted-approval':
+                assert state and state['complete'] and set(state['routes'].values()) == {'free'}
+                assert any('provider-policy/' in p or p == 'skill:ad-remaker:provider-policy' for r in records for p in r['reads']), f'{name}: provider-policy not read'
+                assert re.search(UNQUOTED_REFUSAL, reply) and not re.search(UNQUOTED_ACCEPTED, reply), f'{name}: unquoted approval not refused; see {root}'
             elif name == 'infer-product':
                 assert str(product_doc) in {p for r in records for p in r['reads']}
                 assert 'product c' in reply and any(w in reply for w in ['confirm', 'correct'])
@@ -194,7 +207,8 @@ def main():
             elif name == 'mock-failed':
                 assert state['routes']['research'] == 'trendtrack'
                 assert 'free' in reply and any(w in reply for w in ['auth', 'blocked', 'failed'])
-            print('PASS ' + name + ': setup reads, scratch state assertions, no provider/arbitrary dispatch')
+            checked = 'provider-policy read, SPEND APPROVAL: NOT VALID, free routes unchanged' if name == 'unquoted-approval' else 'setup reads, scratch state assertions'
+            print('PASS ' + name + ': ' + checked + ', no provider/arbitrary dispatch')
         if args.runtime == 'claude':
             original = credential_source.read_text() if credential_source else subprocess.check_output(['security', 'find-generic-password', '-s', 'Claude Code-credentials', '-w'], text=True)
             assert hashlib.sha256(original.encode()).hexdigest() == claude_before, 'Real Claude credential storage changed.'

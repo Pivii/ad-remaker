@@ -376,6 +376,15 @@ run_scenario paid-generation "provider-policy|providers|free-fallback-mode|winni
   "Generate a 15-second product video for my ad with Higgsfield."
 run_scenario pin-lookup "providers" "(^|[^[:xdigit:]])$pika_pin([^[:xdigit:]]|$)" \
   "Using your providers Skill: which vendors can the install script install, and at which commit is Pika pinned? Give the full commit SHA."
+# Issue #28: an approval answering a cost step whose price is unknown is not
+# approval to spend. The prompt and refusal pattern are shared with the Codex
+# and Claude Code checks in tests/check_codex_chat.py.
+unquoted="$(cd "$ROOT/tests" && python3 -c 'import check_codex_chat as c; print(c.UNQUOTED_APPROVAL); print(c.UNQUOTED_REFUSAL)')" \
+  || fail "cannot read the unquoted-approval scenario from tests/check_codex_chat.py"
+if [ -n "$unquoted" ]; then
+  run_scenario unquoted-approval "provider-policy|winning-ad-remake-workflow" "$(printf '%s\n' "$unquoted" | sed -n 2p)" \
+    "$(printf '%s\n' "$unquoted" | sed -n 1p)"
+fi
 end_stage 3
 
 STATUS=0

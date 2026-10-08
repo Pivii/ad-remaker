@@ -30,10 +30,11 @@ After loading setup choices, use the free path in `free-fallback-mode` when expl
 ## 3. Approval before spend
 
 1. Before any call that consumes credits or money (generation, paid AI analysis or transcription, metered research rows), present the cost quote defined in step 4 of `winning-ad-remake-workflow` and wait for explicit approval of that exact batch.
-2. Generate one variant first unless the user approved a larger batch. Never expand an approved batch.
-3. Reuse an existing asset when the prompt and the required output have not changed.
-4. Never retry a failed or unsatisfactory call silently. Present a new estimate and obtain new approval first.
-5. After an ambiguous timeout, check the request status before doing anything else. Never resubmit a request that has no idempotency protection, because it can bill twice.
+2. An approval is valid only against a complete quote: exact units, per-unit price, subtotal, retry margin, estimated total, and currency, each stated. A value labeled **estimate** counts as stated; a value labeled **unknown** does not. Balance may stay **unknown** when the service does not expose it. An approval given before such a quote exists, or against a quote with any of these values unknown, is not approval to spend, even when it limits the scope (for example "one 5-second test clip"). Say so plainly, produce the missing quote from the connected provider or explain what is needed to produce it, and ask for approval again against the complete quote. A scope limit is never a price limit.
+3. Generate one variant first unless the user approved a larger batch. Never expand an approved batch.
+4. Reuse an existing asset when the prompt and the required output have not changed.
+5. Never retry a failed or unsatisfactory call silently. Present a new estimate and obtain new approval first.
+6. After an ambiguous timeout, check the request status before doing anything else. Never resubmit a request that has no idempotency protection, because it can bill twice.
 
 ## 4. Running and keeping outputs
 
