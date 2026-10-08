@@ -5,7 +5,7 @@ description: Use when no ad-intelligence, media-generation, or Meta Ads provider
 
 # Free fallback mode
 
-This Skill is the no-connection path of `winning-ad-remake-workflow`. It replaces each provider stage that has no available, authenticated tool. Every rule of the workflow and of `SOUL.md` still applies: evidence labels, no exact copy, supported claims only, zero competitor traces, and human approval before any cost or external action.
+This Skill is the no-connection path of `winning-ad-remake-workflow`. It replaces each provider stage that has no available, authenticated tool. Every rule of the workflow, of `provider-policy`, and of `SOUL.md` still applies: evidence labels, no exact copy, supported claims only, zero competitor traces, and human approval before any cost or external action.
 
 The result is a complete remake pack ready for a human or a tool chosen by the user. It is not a rendered ad.
 
@@ -13,7 +13,7 @@ The result is a complete remake pack ready for a human or a tool chosen by the u
 
 Run this check before research, analysis, generation, and campaign preparation, not only once per assignment.
 
-1. List the tools actually present in this session. An installed Skill, a declared MCP server, a past session, or the historical report does not prove that a tool is available. A provider tool counts as available only if it is present and a read-only call (for example an account, status, or listing call) succeeds without spending anything.
+1. List the tools actually present in this session. An installed Skill, a declared MCP server, a past session, or the historical report does not prove that a tool is available. A provider counts as available only as `provider-policy` section 1 defines it, and only if a read-only call (for example an account, status, or listing call) succeeds without spending anything. An MCP server declared in the profile `config.yaml` with `enabled: false` is not available: this distribution declares every vendor server that way, and enabling and authenticating one is the user's decision, never the agent's.
 2. Check the local tools:
 
    ```bash
@@ -32,9 +32,9 @@ Run this check before research, analysis, generation, and campaign preparation, 
    | Generation | free path | No engine available: prompts only, no rendering |
    | Campaign | free path | No Meta tool available: manual launch pack |
 
-4. When a local tool is missing, name it, give its install hint, mark the artifacts that depend on it **unknown**, and continue with the rest. Do not install software, download models, or create accounts without the user's explicit approval.
+4. When a local tool is missing, name it, give its install hint, mark the artifacts that depend on it **unknown**, and continue with the rest. Do not install software, download models, or create accounts without the user's explicit approval; for vendor tools, `provider-policy` section 1 applies.
 
-Stages can mix. If a generation engine is available but no research tool is, run research here and generation through that provider's Skill and the workflow's cost approval step.
+Stages can mix. If a generation engine is available but no research tool is, run research here and generation under `provider-policy`, using that vendor's entry in `providers` and the workflow's cost approval step.
 
 ## 2. Research with free public ad libraries
 
@@ -133,7 +133,7 @@ Say this plainly in the final message, next to the list of delivered files.
 ## 7. Rendering outside this mode
 
 - **Local generation.** ComfyUI, Wan, and LTX-Video can run on the user's own machine, depending on GPU and memory. This Skill does not install, configure, or run them; the user may paste the prompts there.
-- **Pika free credits.** On 2026-10-07, Pika's free account credits were the only free hosted tier found. This is a dated observation, not verified for the current session. Using it requires a Pika account and available Pika tools, which takes the generation stage out of this mode: follow `pika-usage` and the workflow's approval step, since the batch still consumes the account's credits.
+- **Pika free credits.** On 2026-10-07, Pika's free account credits were the only free hosted tier found. This is a dated observation, not verified for the current session. Using it requires a Pika account and the `pika` MCP server enabled and authenticated by the user, which takes the generation stage out of this mode: follow `provider-policy` and the Pika entry in `providers`, since the batch still consumes the account's credits.
 - **A native image or video tool** offered by the session is an engine too: confirm it is present, state its cost or mark it **unknown**, and get approval before a batch.
 
 ## 8. Completion
