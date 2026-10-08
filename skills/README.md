@@ -13,10 +13,10 @@ Skills are split into two layers, as recorded in `docs/decisions/ADR-002-provide
 Official vendor Skills are not copied into this repository. Each user installs only the vendors they pay for, at the commit pinned in `providers`:
 
 ```bash
-scripts/install_provider_skills.sh higgsfield fal
+scripts/install_provider_skills.sh pika
 ```
 
-The script runs `hermes skills audit` after installing. Free-mode users install nothing. Run it again after `hermes profile update`, which replaces the profile's `skills/` directory.
+The script runs `hermes skills audit` after installing. On 2026-10-08 only Pika is installable. Higgsfield and fal.ai are thin entries: the Hermes v0.20.2 skills guard blocks their Skills, so `providers` points to the pinned vendor Skill as a source to read and to the vendor's own CLI install command, which needs the user's approval under `provider-policy`. Free-mode users install nothing. Run it again after `hermes profile update`, which replaces the profile's `skills/` directory.
 
 ## Provenance policy
 

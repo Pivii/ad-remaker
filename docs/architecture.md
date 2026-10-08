@@ -29,7 +29,7 @@ The profile isolates Ad Remaker's configuration, Skills, connections, memory, se
 Skills define workflows, in two layers (ADR-002).
 
 - Agent layer, distributed: the central business Skill orchestrates research, analysis, adaptation, approvals, production, quality control, and delivery. `provider-policy` holds the rules shared by every provider call, and `providers` routes each vendor to its official source.
-- Vendor layer, installed per user: official vendor Skills, installed by reference at a pinned commit with `scripts/install_provider_skills.sh` and re-scanned with `hermes skills audit`. They are not copied into the distribution, and `provider-policy` takes precedence over them.
+- Vendor layer, installed per user: official vendor Skills, installed by reference at a pinned commit with `scripts/install_provider_skills.sh` and re-scanned with `hermes skills audit`. They are not copied into the distribution, and `provider-policy` takes precedence over them. A vendor whose Skill the Hermes skills guard blocks stays a thin entry in `providers`: the agent reads the pinned Skill as documentation, and the user installs the vendor CLI with approval.
 
 A missing Skill must never be simulated. Source texts keep their provenance: the workflow's in `references/upstream.md`, the vendors' in `docs/provenance/`.
 

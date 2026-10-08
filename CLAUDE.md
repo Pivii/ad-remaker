@@ -35,7 +35,7 @@ Skills are split into two layers (ADR-002).
   - `winning-ad-remake-workflow` is the central business Skill. It orchestrates research, analysis, cost approval, generation, QC, delivery, and the paused Meta campaign gate.
   - `provider-policy` holds the rules shared by every provider call (auth check, approval before spend, no silent retry or batch expansion, download outputs, free path when nothing is connected). Write a shared provider rule here and nowhere else.
   - `providers` is the routing directory: per vendor, the official source, pinned ref, license, route order, and check date.
-- Vendor layer, not in this repo: official vendor Skills installed by reference with `scripts/install_provider_skills.sh`. Never copy a vendor Skill into `skills/`.
+- Vendor layer, not in this repo: official vendor Skills installed by reference with `scripts/install_provider_skills.sh`, only for pin table rows with `Install` `hermes` (Pika on 2026-10-08). Vendors whose Skills the Hermes skills guard blocks (Higgsfield, fal.ai) are thin entries with `Install` `no`. Never copy or patch a vendor Skill into `skills/` to get around the guard.
 - Changing a vendor pin is deliberate: read the vendor diff, re-check the license, update `Pinned ref`, `License`, and `Checked` in the pin table, bump the version, and run `hermes skills audit` after reinstalling.
 - When editing `winning-ad-remake-workflow`, change `SKILL.md` only. Keep `references/upstream.md` verbatim and keep the link to it at the bottom of `SKILL.md`. Never edit `docs/provenance/`.
 - Treat model names, prices, tool counts, and connection states from upstream files, provenance files, and the report as historical until verified.

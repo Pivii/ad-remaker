@@ -20,7 +20,7 @@ This table is the single source of truth for vendor Skill pins. `scripts/install
 | Vendor | Repository | Skill path | Pinned ref | Install | License | Checked |
 |---|---|---|---|---|---|---|
 | higgsfield | higgsfield-ai/skills | higgsfield-generate | f83af0bc1d937c8119099a11f8ebbf5e6fb99819 | no | MIT | 2026-10-08 |
-| pika | Pika-Labs/Pika-Plugins | skills/ugc-ads | f27b3ba28a7be7c5f3a74d8fdd54b770f5d8157b | hermes | Apache-2.0 | 2026-10-07 |
+| pika | Pika-Labs/Pika-Plugins | skills/ugc-ads | f27b3ba28a7be7c5f3a74d8fdd54b770f5d8157b | hermes | Apache-2.0 | 2026-10-08 |
 | fal | fal-ai-community/skills | skills/genmedia | 9ca850412943251fc9a466c4c29fdaf7a303a3d8 | no | none declared | 2026-10-08 |
 | kie-ai | none | none | none | no | unknown | 2026-10-07 |
 | trendtrack | none | none | none | no | not applicable | 2026-10-07 |
@@ -79,6 +79,7 @@ Route order lists the routes a vendor offers, in the order to try them. Use a ro
 ### Pika
 
 - Official Skill: [`Pika-Labs/Pika-Plugins`](https://github.com/Pika-Labs/Pika-Plugins), Skill `ugc-ads`. Its Skills assume a Pika MCP server registered as `pika`.
+- Installed with the script at the pinned commit in a scratch profile on 2026-10-08 (Hermes v0.20.2): scan verdict SAFE, `hermes skills audit` SAFE, listed as a `url` community Skill.
 - Not used: [`Pika-Labs/Pika-Skills`](https://github.com/Pika-Labs/Pika-Skills). Its README states the repository is deprecated and its Skills no longer work because the Pika Developer API was discontinued.
 - License: Apache-2.0, from the repository `LICENSE`.
 - Route order: MCP only. No CLI found, and the former Developer API (REST) is discontinued.
