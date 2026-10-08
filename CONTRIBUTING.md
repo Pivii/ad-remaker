@@ -36,13 +36,15 @@ Before you open a pull request, run the smoke test and paste its output in the p
 tests/smoke.sh --chat
 ```
 
-It runs the two checks above, installs your checkout into a throwaway Hermes profile named `ar-smoke-*` that it always deletes, and runs a few headless chat scenarios. What it costs: stage 3 calls only the chat model (by default `gpt-6.1-sol` through the `openai-codex` provider, which uses your ChatGPT subscription allowance; authenticate first with `hermes auth add openai-codex`). It never calls an ad or media provider and never touches your own `ad-remaker` profile. Without Hermes installed, stages 2 and 3 print `SKIPPED`. Stages, options, and the other models you can select are described in [`tests/README.md`](tests/README.md).
+It runs the two checks above and the model-free setup state and guard checks (`tests/check_setup.py`, `tests/check_setup_chat.py`), installs your checkout into a throwaway Hermes profile named `ar-smoke-*` that it always deletes, and runs a few headless chat scenarios. What it costs: stage 3 calls only the chat model (by default `gpt-6.1-sol` through the `openai-codex` provider, which uses your ChatGPT subscription allowance; authenticate first with `hermes auth add openai-codex`). It never calls an ad or media provider and never touches your own `ad-remaker` profile. Without Hermes installed, stages 2 and 3 print `SKIPPED`. Stages, options, and the other models you can select are described in [`tests/README.md`](tests/README.md).
+
+If you change the `setup` Skill or its helper, also run the guarded setup chat checks listed under "Guided setup checks" in [`tests/README.md`](tests/README.md). They use your existing ChatGPT or Claude subscription only, in scratch configuration.
 
 ## Try your change on each runtime
 
 Start each runtime from a scratch folder outside the repository, so the contributor instructions in `AGENTS.md` and `CLAUDE.md` are not loaded as if they were the agent's own.
 
-- **Claude Code**: `claude --plugin-dir /path/to/your/clone` loads your checkout for one session without installing it. `claude plugin validate /path/to/your/clone/.claude-plugin/plugin.json` checks the manifest; one warning about the root `CLAUDE.md` is expected.
+- **Claude Code**: `claude --plugin-dir /path/to/your/clone` loads your checkout for one session without installing it. Setup saves its choices under `~/.config/ad-remaker/claude/`; prefix the command with `XDG_CONFIG_HOME="$(mktemp -d)"` so test choices stay out of your own. `claude plugin validate /path/to/your/clone/.claude-plugin/plugin.json` checks the manifest; one warning about the root `CLAUDE.md` is expected.
 - **Hermes**: install into a throwaway profile, never over your real one, then delete it:
 
   ```bash
@@ -53,16 +55,18 @@ Start each runtime from a scratch folder outside the repository, so the contribu
   hermes profile delete -y ad-remaker-dev
   ```
 
-- **Codex**: `python3 tests/check_codex.py` installs a clean export into a throwaway Codex home, checks the five Skills and the empty MCP mapping, and removes everything, with no model call. To try it by hand, follow the local export steps in [`docs/codex-setup.md`](docs/codex-setup.md); never install a live development clone.
+  Setup choices made in that profile live inside it (`ad-remaker-state/`) and are deleted with it.
+
+- **Codex**: `python3 tests/check_codex.py` installs a clean export into a throwaway Codex home, checks the six Skills and the empty MCP mapping, and removes everything, with no model call. To try it by hand, follow the local export steps in [`docs/codex-setup.md`](docs/codex-setup.md); never install a live development clone. Setup choices go to `~/.config/ad-remaker/codex/` unless you set `XDG_CONFIG_HOME` to a scratch folder.
 
 Never sign in to a vendor, run a paid generation, or touch a real ad account while testing a contribution.
 
 ## Repository rules
 
-- **Nothing private in Git.** No secrets, tokens, `.env` files, brand or customer data, generated media, memories, or sessions. Brand data for your own use goes in `local/brands/<brand>/`, which is ignored by Git.
+- **Nothing private in Git.** No secrets, tokens, `.env` files, brand or customer data, generated media, memories, sessions, or setup state (`setup.json`, `ad-remaker-state/`; the validator rejects them). Brand data for your own use goes in `local/brands/<brand>/`, which is ignored by Git.
 - **Language and style.** Write repository documentation in clear English. Do not use the em dash character in prose. Keep exact product names, commands, and quoted source text as they are.
 - **Source texts stay verbatim.** Never edit `docs/provenance/` or `skills/winning-ad-remake-workflow/references/upstream.md`. When you change the workflow, edit its `SKILL.md` only.
-- **`SOUL.md` has generated copies.** After editing it, run `python3 scripts/sync_claude_agent.py` and `python3 scripts/sync_skill_rules.py`, and commit the regenerated `agents/ad-remaker.md` and `skills/*/references/agent-rules.md` with it. Never edit those copies by hand.
+- **`SOUL.md` has generated copies.** After editing it, run `python3 scripts/sync_claude_agent.py` and `python3 scripts/sync_skill_rules.py`, and commit the regenerated `agents/ad-remaker.md` and `skills/*/references/agent-rules.md` with it. The same script copies `docs/service-matrix.md` to `skills/setup/references/service-readiness.md`, so run it after editing the service matrix too. Never edit those copies by hand.
 - **Versions move together.** `version` in `.claude-plugin/plugin.json` and `.codex-plugin/plugin.json` equals `version` in `distribution.yaml`. Bump all three for every release.
 - **MCP servers are declared twice.** Add a server to `config.yaml` under `mcp_servers` with `enabled: false`, and to `.mcp.json` under the same name and URL. Use OAuth or `${ENV_VAR}` placeholders declared in `distribution.yaml` `env_requires`, and record its official source and check date in `docs/service-matrix.md`.
 - **Vendor pins are deliberate.** To change a vendor Skill pin in `skills/providers/SKILL.md`: read the vendor's diff, check the license again, update `Pinned ref`, `License`, and `Checked` in the pin table, bump the version, and run `hermes skills audit` after reinstalling. Never copy or patch a vendor Skill into `skills/`.
@@ -96,8 +100,9 @@ These rules protect the people who run the agent. A pull request that loosens th
 - `.codex-plugin/plugin.json`: Codex Skills manifest, explicitly no bundled MCP servers.
 - `agents/ad-remaker.md`: Claude Code subagent. Its body is generated from `SOUL.md` by `scripts/sync_claude_agent.py`.
 - `.mcp.json`: the vendor MCP servers for Claude Code, the same set as `config.yaml`.
-- `skills/`: the business workflow, the shared provider policy, the Meta rules, the free fallback mode, and the `providers` routing directory with its vendor pin table.
+- `skills/`: guided setup, the business workflow, the shared provider policy, the Meta rules, the free fallback mode, and the `providers` routing directory with its vendor pin table.
 - `docs/claude-code-setup.md` and `docs/codex-setup.md`: installation details per runtime.
+- `docs/setup.md`: first run, setup choices, connections, and private state (ADR-006).
 - `docs/ad-remaker-complete-operating-report.md`: complete historical source report, translated into English.
 - `docs/architecture.md`: distribution layering and ownership boundaries.
 - `docs/service-matrix.md`: integration readiness states without unsupported availability claims.
