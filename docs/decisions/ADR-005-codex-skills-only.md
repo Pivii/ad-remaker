@@ -16,7 +16,7 @@ Each of the five Skills first reads its own `references/agent-rules.md`, generat
 
 Codex starts with no bundled MCP servers. Users deliberately add only the desired vendor servers to their own configuration. Vendor OAuth and tool operation stay unverified until checked separately; endpoint declarations never prove connection. Keep vendor Skills optional at the current pins and ffmpeg-skill Claude-only (ADR-004).
 
-Local installation uses `scripts/export_codex_package.py`, an allowlisted export of tracked working-tree files to a new directory outside the repository. It includes complete Skills, the Codex manifest, marketplace, and license, excluding Claude MCP/contributor files and all runtime state. Private Git installation uses a Git snapshot, which excludes ignored local files. Never install Codex from the live development clone.
+Local installation uses `scripts/export_codex_package.py`, an allowlisted export of tracked working-tree files to a new directory outside the repository. It includes complete Skills, the Codex manifest, marketplace, and license, excluding Claude MCP/contributor files and all runtime state. Private Git installation uses a Git snapshot, which excludes ignored local files. The tested Codex client retains installer-created `.git` metadata in its private Git plugin cache; that metadata is not part of the author-owned local export. Tests separately check cached Git config/remote URLs for embedded credentials and preserve strict exclusion of ignored worktrees and private runtime files. Never install Codex from the live development clone.
 
 ## Consequences
 

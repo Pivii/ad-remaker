@@ -32,9 +32,13 @@ class Server:
                 self.messages.put(json.loads(line))
             self.messages.put(None)
         threading.Thread(target=read, daemon=True).start()
-        self.call('initialize', {'clientInfo': {'name': 'ad-remaker-check', 'version': '1'},
-                                'capabilities': {'experimentalApi': True}})
-        self.send({'method': 'initialized'})
+        try:
+            self.call('initialize', {'clientInfo': {'name': 'ad-remaker-check', 'version': '1'},
+                                    'capabilities': {'experimentalApi': True}})
+            self.send({'method': 'initialized'})
+        except BaseException:
+            self.close()
+            raise
 
     def send(self, value: dict) -> None:
         self.process.stdin.write(json.dumps(value) + '\n')
@@ -94,6 +98,18 @@ def check(source: str | None = None, ref: str | None = None) -> None:
         # Ignored runtime sentinels live in an isolated copy, never the user's clone.
         dirty = root / 'dirty'
         shutil.copytree(ROOT, dirty, ignore=shutil.ignore_patterns('.git', '__pycache__'))
+        for relative, mutate, error in [
+            ('skills/provider-policy/references/agent-rules.md', lambda text: text + '\nstale rule\n', 'generated rules differ'),
+            ('.codex-plugin/plugin.json', lambda text: json.dumps(dict(json.loads(text), version='0.0.0-invalid')), 'identity/version/skills'),
+            ('.codex-plugin/plugin.json', lambda text: json.dumps(dict(json.loads(text), mcpServers={'unsafe': {'url': 'https://example.invalid'}})), 'identity/version/skills'),
+        ]:
+            target = dirty / relative
+            original = target.read_text()
+            target.write_text(mutate(original))
+            result = subprocess.run([sys.executable, str(dirty / 'scripts/validate_distribution.py')], capture_output=True, text=True)
+            target.write_text(original)
+            assert result.returncode == 1 and error in result.stderr, result.stderr
+        print('PASS validator rejects rule drift, version mismatch and nonempty Codex MCP mapping')
         subprocess.run(['git', 'init', '-q', str(dirty)], check=True)
         subprocess.run(['git', '-C', str(dirty), 'add', '.'], check=True)
         for path in ['.claude/worktrees/nested/skills/extra/SKILL.md',
@@ -120,9 +136,28 @@ def check(source: str | None = None, ref: str | None = None) -> None:
             if file.is_file() and file.relative_to(package).parts[0] == 'skills':
                 target = cached / file.relative_to(package)
                 assert target.read_bytes() == file.read_bytes(), f'Missing/changed support file: {file}'
-        forbidden = {'.env', 'auth.json', 'sessions', 'memory', 'local', 'outputs', 'worktrees', '.git'}
-        assert not any(set(p.relative_to(cached).parts) & forbidden for p in cached.rglob('*'))
-        print('PASS installed support files byte-identical; no runtime state')
+        forbidden = {'.env', 'auth.json', 'sessions', 'memory', 'memories', 'local', 'outputs', 'worktrees', 'mcp-tokens', 'vault'}
+        unexpected = [p.relative_to(cached).as_posix() for p in cached.rglob('*') if set(p.relative_to(cached).parts) & forbidden]
+        assert not unexpected, 'Runtime/secret paths in installed cache: ' + ', '.join(unexpected)
+        git_metadata = cached / '.git'
+        if git_metadata.exists():
+            assert source, 'Local export must not include Git metadata.'
+            assert git_metadata.is_dir(), 'Unexpected Git metadata link/file in cached plugin.'
+            import configparser
+            from urllib.parse import urlsplit
+            from validate_distribution import TOKEN_SHAPE
+            git_config = configparser.RawConfigParser()
+            config_text = (git_metadata / 'config').read_text()
+            assert not TOKEN_SHAPE.search(config_text), 'Token-shaped value in Git cache config.'
+            git_config.read_string(config_text)
+            for section in git_config.sections():
+                for key, value in git_config.items(section):
+                    assert key.lower() not in {'extraheader', 'password', 'token', 'secret', 'authorization'}, 'Credential field in Git cache config.'
+                    if key.lower() == 'url':
+                        parsed = urlsplit(value)
+                        assert not parsed.username and not parsed.password and not parsed.query, 'Credentials/query in Git remote URL.'
+            print('NOTE Codex Git cache includes installer-created .git metadata; config/remote URLs contain no embedded credentials')
+        print('PASS installed support files byte-identical; no ignored worktree, secret, or user runtime paths')
         listing = command(env, work, 'plugin', 'list', '--marketplace', 'ad-remaker', '--json')
         assert any(p['pluginId'] == PLUGIN and p['enabled'] for p in listing['installed'])
         server = Server(env, work)

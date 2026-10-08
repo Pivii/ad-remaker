@@ -57,6 +57,8 @@ REQUIRED_FILES = (
     "scripts/sync_claude_agent.py",
     "scripts/validate_distribution.py",
     "skills/README.md",
+    "skills/winning-ad-remake-workflow/SKILL.md",
+    "skills/winning-ad-remake-workflow/references/upstream.md",
     "skills/free-fallback-mode/SKILL.md",
     "skills/free-fallback-mode/scripts/_media.py",
     "skills/free-fallback-mode/scripts/cut_list.py",
