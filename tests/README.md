@@ -39,13 +39,13 @@ Future business acceptance tests must use redistributable fixtures without sensi
 
 ## Smoke test
 
-`tests/smoke.sh` runs the checks above and a free headless check of the installed agent in one command. Agents run `tests/smoke.sh --chat` before opening a PR.
+`tests/smoke.sh` runs the checks above and a headless check of the installed agent without ad or media provider calls in one command. Agents run `tests/smoke.sh --chat` before opening a PR.
 
 ```bash
 tests/smoke.sh                 # stages 1 and 2
 tests/smoke.sh --chat          # stages 1, 2 and 3
 tests/smoke.sh --chat --keep   # keep the logs even when every stage passes
-SMOKE_PROVIDER=copilot SMOKE_MODEL=gpt-4.1 tests/smoke.sh --chat
+SMOKE_PROVIDER=openai-codex SMOKE_MODEL=gpt-6.1-sol tests/smoke.sh --chat
 ```
 
 The stages run in order. Each check prints `PASS` or `FAIL`, and the script exits non-zero at the end of the first failing stage.
@@ -61,11 +61,13 @@ The stages run in order. Each check prints `PASS` or `FAIL`, and the script exit
 | `paid-generation` | Generate a video with Higgsfield | One of `provider-policy`, `providers`, `free-fallback-mode`, `winning-ad-remake-workflow` read |
 | `pin-lookup` | Installable vendors and the Pika pin, from `providers` | `providers` read, and the reply contains `f27b3ba` |
 
-Provider and model come from `SMOKE_PROVIDER` (default `copilot`) and `SMOKE_MODEL` (default `gpt-4.1`). On 2026-10-08 that pair worked through a GitHub Copilot subscription, and Claude models returned HTTP 400 through Copilot. Stage 3 calls only that chat model. Before chatting, the script sets `auxiliary.free_only: true` in the throwaway profile, so Hermes cannot fall back to a paid OpenRouter model for background tasks. It also sets `agent.clarify_timeout: 5`, so a clarifying question does not block a headless run, and `agent.api_max_retries: 1`, so a failed model call is reported at once. Without that, a provider rate limit (HTTP 429, seen from Copilot on 2026-10-08 after several runs in a row) makes Hermes wait up to 600 seconds per retry. A rate-limited scenario fails with a message saying so; that is not an agent failure, so rerun later. Each scenario is also stopped after `SMOKE_CHAT_TIMEOUT` seconds (default 300). Session title generation is turned off in the throwaway profile, which saves one model call per scenario. Hermes may write `TERMINAL_CWD` into the throwaway profile's `.env`; the profile is deleted afterwards.
+Provider and model come from `SMOKE_PROVIDER` (default `openai-codex`) and `SMOKE_MODEL` (default `gpt-6.1-sol`). Authenticate Hermes with `hermes auth add openai-codex` using your ChatGPT account before running stage 3. Inference with this provider and model succeeded on 2026-10-08 during the smoke test; account access and limits must be checked again when they change. Stage 3 uses your ChatGPT subscription allowance rather than an OpenAI API key. Other providers and models can be selected explicitly through the environment variables; there is no automatic switch to Copilot. Stage 3 calls only that chat model. Before chatting, the script sets `auxiliary.free_only: true` in the throwaway profile, so Hermes cannot fall back to a paid OpenRouter model for background tasks. It also sets `agent.clarify_timeout: 5`, so a clarifying question does not block a headless run, and `agent.api_max_retries: 1`, so a failed model call is reported at once. Without that, a provider rate limit (HTTP 429, seen from Copilot on 2026-10-08 after several runs in a row) makes Hermes wait up to 600 seconds per retry. A rate-limited scenario fails with a message saying so; that is not an agent failure, so rerun later. Each scenario is also stopped after `SMOKE_CHAT_TIMEOUT` seconds (default 300). Session title generation is turned off in the throwaway profile, which saves one model call per scenario. Hermes may write `TERMINAL_CWD` into the throwaway profile's `.env`; the profile is deleted afterwards.
 
 On 2026-10-08, the terse `meta-launch` prompt read no Skill in some gpt-4.1 runs. The Skill read is therefore reported, not asserted, and the scenario still fails on any activation or invented vendor command. Keep scenarios cheap and deterministic: if one is flaky across 3 runs, drop it or loosen its assertion rather than adding retries. Scenarios may only rely on Skills present on `main`.
 
 Logs go to a temporary directory printed at the end: one subdirectory per scenario with `chat.log`, `session.jsonl`, `calls.txt`, and `reply.txt`. The directory is deleted when every stage passes, unless `--keep` is given, and kept after a failure.
+
+Verification on 2026-10-08 with Hermes v0.20.2 and the 0.7.0 distribution: `tests/smoke.sh` passed, and `tests/smoke.sh --chat --keep` passed three consecutive runs using `openai-codex` and `gpt-6.1-sol`. All four chat scenarios passed each run. Completed inference calls used Codex, all throwaway profiles were deleted, and the real `ad-remaker` profile's file fingerprint was unchanged. No ad or media provider call was made. These checks do not cover real provider behavior or guarantee that every possible prompt follows the agent's rules.
 
 ## Release install check
 

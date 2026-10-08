@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Free, headless smoke test of the Ad Remaker distribution. Run it before every PR.
+# Headless smoke test of the Ad Remaker distribution. Run it before every PR.
 # It never calls a paid provider, never touches the user's `ad-remaker` profile,
 # and deletes every throwaway profile it creates, including on failure.
 set -uo pipefail
@@ -7,8 +7,8 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHAT=0
 KEEP=0
-PROVIDER="${SMOKE_PROVIDER:-copilot}"
-MODEL="${SMOKE_MODEL:-gpt-4.1}"
+PROVIDER="${SMOKE_PROVIDER:-openai-codex}"
+MODEL="${SMOKE_MODEL:-gpt-6.1-sol}"
 MAX_TURNS=8
 CHAT_TIMEOUT="${SMOKE_CHAT_TIMEOUT:-300}"
 CHAT_PID=""
@@ -36,8 +36,8 @@ Options:
   -h, --help  Show this help.
 
 Environment:
-  SMOKE_PROVIDER  Hermes inference provider for stage 3 (default: copilot).
-  SMOKE_MODEL     Model for stage 3 (default: gpt-4.1).
+  SMOKE_PROVIDER  Hermes inference provider for stage 3 (default: openai-codex).
+  SMOKE_MODEL     Model for stage 3 (default: gpt-6.1-sol).
   SMOKE_CHAT_TIMEOUT  Seconds before one chat scenario is stopped (default: 300).
 
 Logs go to a temporary directory printed at the end. It is deleted on success

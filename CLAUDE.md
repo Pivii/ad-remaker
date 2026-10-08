@@ -67,7 +67,7 @@ python3 tests/check_mcp_fixtures.py   # the validator must reject every invalid 
 
 PyYAML is optional; the validator falls back to a minimal parser without it. For release testing, also install the profile locally with `hermes profile install` and confirm it loads.
 
-Before opening a PR, run the free headless smoke test and report its output:
+Before opening a PR, run the headless smoke test and report its output:
 
 ```bash
 tests/smoke.sh --chat
