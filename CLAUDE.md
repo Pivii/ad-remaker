@@ -2,7 +2,7 @@
 
 # Working on this repository
 
-This repository is the source of the Ad Remaker agent, packaged as a Hermes profile distribution and, from the same files, as a Claude Code plugin (ADR-003) and a Codex CLI plugin (ADR-005). You are editing the agent, not acting as it. Read `SOUL.md` and the Skills to understand the agent's behavior, but do not adopt its persona while working here.
+This repository is the source of the Ad Remaker agent, packaged as a Hermes profile distribution and, from the same files, as a Claude Code plugin (ADR-003) and a Codex CLI and Desktop plugin (ADR-005). You are editing the agent, not acting as it. Read `SOUL.md` and the Skills to understand the agent's behavior, but do not adopt its persona while working here.
 
 ## What the agent does
 
@@ -58,6 +58,7 @@ Skills are split into two layers (ADR-002).
 - Keep `version` in both plugin manifests equal to `version` in `distribution.yaml`.
 - Codex `.codex-plugin/plugin.json` must keep `mcpServers: {}`. Do not bundle vendor endpoints or copy Hermes enabled flags into it.
 - Export local Codex installation with `scripts/export_codex_package.py`; do not install the live development clone.
+- Desktop is a required target for issue #22. Use `python3 tests/check_codex_desktop.py` for the identified app bundle/runtime; its headless pass never proves the GUI install/composer flow. Keep the PR draft and issue open until that required flow is verified.
 - Run `python3 tests/check_codex.py` for Codex distribution changes. Behavioral checks are separate: `python3 tests/check_codex_chat.py --chat`, using the reviewed test-only pre-dispatch guard.
 - Bump `version` in `distribution.yaml` for every release.
 

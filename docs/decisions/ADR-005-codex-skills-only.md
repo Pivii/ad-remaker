@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted on October 8, 2026 (issue #22).
+Accepted on October 8, 2026 (issue #22). The maintainer clarified that both CLI and Desktop are required; the issue remains open until actual Desktop installation, discovery and explicit rule-loaded invocation are verified.
 
 ## Context
 
@@ -24,6 +24,10 @@ Local installation uses `scripts/export_codex_package.py`, an allowlisted export
 - Users can invoke `ad-remaker:winning-ad-remake-workflow` and the four other discoverable Skill names explicitly. An installed Skill does not guarantee implicit selection or compliance on every prompt.
 - Codex local marketplace updates require a new export and plugin remove/add. `marketplace upgrade` supports Git sources only; Git updates refresh the snapshot and reinstall the selected plugin. Tests use throwaway `CODEX_HOME` and a work directory outside contributor context.
 - Model-free checks prove package hygiene, byte-identical support files, discovery, no MCP startup, update and removal. Behavioral checks are separate, opt-in, and guarded before tool dispatch. Hermes inference through openai-codex is not Codex plugin evidence.
-- Codex CLI 0.160.0 is the tested baseline, not a claim about older clients. Desktop/IDE/cloud installation and discovery have not been verified and are not advertised as supported surfaces.
+- Codex CLI 0.160.0 is the tested baseline, not a claim about older clients. Desktop is a required target, with separately qualified headless bundled-runtime checks. Its Plugins Directory and composer flow remain open completion criteria; a runtime pass alone cannot close #22. IDE/cloud remain unverified.
 
 Sources: [official packaging documentation](https://developers.openai.com/plugins/build/plugins), [official hooks documentation](https://learn.chatgpt.com/docs/hooks). Observations are dated, not guarantees about future clients.
+
+## Required Desktop follow-up
+
+The installed `com.openai.codex` Desktop bundle exposes an independently versioned embedded runtime. Its app-server provides the same plugin/list, plugin/install and plugin/installed methods used by the application source. `tests/check_codex_desktop.py` exercises that runtime in scratch configuration, without opening the GUI. Marketplace registration is necessary for discovery from a project outside the marketplace root; installing directly from a repo-scoped catalog alone does not establish global discovery. The existing documented CLI registration is reused, so no second metadata tree is added. Actual GUI installation/discovery/composer interaction is still required before completion, and the PR remains draft while it is unverified.

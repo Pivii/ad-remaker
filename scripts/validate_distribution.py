@@ -24,6 +24,7 @@ REQUIRED_FILES = (
     "scripts/export_codex_package.py",
     "scripts/sync_skill_rules.py",
     "tests/check_codex.py",
+    "tests/check_codex_desktop.py",
     "tests/check_codex_chat.py",
     "tests/codex_guard.py",
     ".claude-plugin/marketplace.json",

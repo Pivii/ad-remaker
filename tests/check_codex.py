@@ -19,10 +19,13 @@ from export_codex_package import export
 
 PLUGIN = 'ad-remaker@ad-remaker'
 
+def binary() -> str:
+    return os.environ.get('CODEX_TEST_BIN', 'codex')
+
 
 class Server:
     def __init__(self, env: dict[str, str], cwd: Path):
-        self.process = subprocess.Popen(['codex', 'app-server'], cwd=cwd, env=env,
+        self.process = subprocess.Popen([binary(), 'app-server'], cwd=cwd, env=env,
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             text=True)
         self.messages: queue.Queue = queue.Queue()
@@ -68,7 +71,7 @@ class Server:
 
 
 def command(env: dict[str, str], cwd: Path, *args: str) -> dict:
-    result = subprocess.run(['codex', *args], cwd=cwd, env=env,
+    result = subprocess.run([binary(), *args], cwd=cwd, env=env,
                             text=True, capture_output=True, timeout=90)
     if result.returncode:
         raise RuntimeError(f'codex {" ".join(args)}: {result.stderr}')
@@ -181,7 +184,7 @@ def check(source: str | None = None, ref: str | None = None) -> None:
             config.write('\n[mcp_servers.pika]\nenabled = false\nurl = ' + json.dumps(pika_url) + '\n')
         configured = command(env, work, 'mcp', 'get', 'pika', '--json')
         assert configured['transport']['url'] == pika_url and configured['enabled'] is False, configured
-        subprocess.run(['codex', 'mcp', 'remove', 'pika'], cwd=work, env=env, check=True, capture_output=True)
+        subprocess.run([binary(), 'mcp', 'remove', 'pika'], cwd=work, env=env, check=True, capture_output=True)
         print('PASS vendor opt-in/disable/remove configuration parsed; no login or provider call')
         # Upgrade refreshes a Git snapshot; add reinstalls the selected version.
         if source:
@@ -215,7 +218,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.ref and not args.source:
         parser.error('--ref requires --source')
-    print(subprocess.check_output(['codex', '--version'], text=True).strip())
+    print(subprocess.check_output([binary(), '--version'], text=True).strip())
     check(args.source, args.ref)
     return 0
 
