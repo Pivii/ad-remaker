@@ -1,6 +1,6 @@
 ---
 name: meta-ads-usage
-description: Use when creating, editing, reading back, activating, scheduling, or budgeting a Meta (Facebook and Instagram) campaign, ad set, or ad through Meta's ads MCP server or the Ads CLI, including the Meta campaign step of winning-ad-remake-workflow. Holds the paused-by-default, read-back, and separate-approval rules for Meta.
+description: Read before any Meta ad action or command (go live, activate, create, edit, read back, budget, or schedule a Meta campaign, ad set, or ad on Facebook or Instagram, or give the user a Meta command or Ads Manager step to run), through Meta's ads MCP server or the Ads CLI, including the Meta campaign step of winning-ad-remake-workflow. Holds the paused-by-default, read-back, and separate-approval rules for Meta.
 ---
 
 # Meta Ads usage
@@ -37,6 +37,7 @@ Use a route only when it is connected and authenticated, as `provider-policy` re
 - Authentication: a Meta system user access token in `ACCESS_TOKEN` and the ad account in `AD_ACCOUNT_ID`, set by the user in the environment or a `.env` file. Never ask for the token in chat. Check with `meta auth status`.
 - Commands are `meta [global options] ads <resource> <action>`. Global options such as `--output json` go before `ads`.
 - Never pass `--force` or `--no-input` to a write or delete command.
+- Dry run: `--execution-options validate_only` validates `campaign create` and `campaign update` without applying them, so nothing is created or spent. It appears in the `--help` of `meta-ads` 1.2.0 (checked on 2026-10-08), not in Meta's web docs, and not on `adset create` or `ad create`.
 
 ## 3. Create paused
 
