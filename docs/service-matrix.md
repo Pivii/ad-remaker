@@ -30,7 +30,7 @@ Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in 
 
 A pinned vendor Skill is installed only when a user runs `scripts/install_provider_skills.sh`, and only for rows whose `Install` is `hermes`. An installed Skill is not a connection, and neither is a declared MCP server: see the next paragraph. Pins, licenses, and check dates live in the pin table of `skills/providers/SKILL.md`.
 
-No service is `verified`. `configured` means only that the server is declared in `config.yaml` `mcp_servers` with `enabled: false`; no live connection has been tested. Until a user enables and authenticates a server, the agent can only use native tools and free public sources, following `free-fallback-mode`. Its local analysis scripts need `ffmpeg` and PySceneDetect installed on the host; the distribution does not install them.
+No service is `verified`. `configured` means only that the server is declared in `config.yaml` `mcp_servers` with `enabled: false`, and in the Claude Code plugin's `.mcp.json` under the same name and URL; no live connection has been tested. In Claude Code, a declared server starts when the plugin is enabled but stays unauthenticated until the user signs in (ADR-003). On 2026-10-08, Claude Code 2.1.288 built Meta's authorization URL for `meta_ads` without a pre-registered app ID; the sign-in itself was not tested. Until a user enables and authenticates a server, the agent can only use native tools and free public sources, following `free-fallback-mode`. Its local analysis scripts need `ffmpeg` and PySceneDetect installed on the host; the distribution does not install them.
 
 ## Declared MCP servers
 
