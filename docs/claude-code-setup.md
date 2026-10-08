@@ -1,6 +1,6 @@
 # Claude Code setup
 
-This page holds the Claude Code installation details that the root [README](../README.md) summarizes: installing the plugin, choosing which vendors it may connect to, the optional local FFmpeg tool, and vendor Skills. For how to use the agent once installed, see "Usage" in the README.
+This page holds the Claude Code installation details that the root [README](../README.md) summarizes: installing the plugin, choosing which vendors it may connect to, the optional local FFmpeg tool, and vendor Skills. For how to use the agent once installed, see "Usage" in the README. First-run setup (`/ad-remaker:setup`), connecting a service you chose, and where choices are saved are in [the setup guide](setup.md).
 
 ## Install the plugin
 
@@ -10,7 +10,7 @@ The repository is its own one-plugin marketplace. Add it, then install the plugi
 claude plugin marketplace add Pivii/ad-remaker          # the private repository, with your GitHub access
 # or, from a local clone: claude plugin marketplace add /path/to/ad-remaker
 claude plugin install ad-remaker@ad-remaker
-claude plugin details ad-remaker@ad-remaker             # 5 Skills, 1 agent, 5 MCP servers
+claude plugin details ad-remaker@ad-remaker             # 6 Skills, 1 agent, 5 MCP servers
 ```
 
 To try it for one session without installing, run `claude --plugin-dir /path/to/ad-remaker`.
@@ -23,7 +23,7 @@ The plugin provides:
 
 ## Use only the vendors you pay for
 
-Claude Code has no `enabled: false` for a plugin's MCP servers: all five start when the plugin is enabled. Each one uses OAuth, so it stays unauthenticated and does nothing until you sign in with `claude mcp login plugin:ad-remaker:<name>` or from `/mcp`. Without a paid account, sign in to nothing: the agent follows `free-fallback-mode`.
+Claude Code has no `enabled: false` for a plugin's MCP servers: all five start when the plugin is enabled. Each one uses OAuth, so it stays unauthenticated and does nothing until you sign in with `claude mcp login plugin:ad-remaker:<name>` or from `/mcp`. Without a paid account, choose the free route in setup and sign in to nothing; the agent follows `free-fallback-mode`.
 
 To stop Claude Code from connecting to a vendor you do not pay for, either turn the server off in `/mcp` (per project), or block it everywhere with `deniedMcpServers` in your own `~/.claude/settings.json`, one entry per vendor:
 
