@@ -4,7 +4,8 @@ Skills are split into two layers, as recorded in `docs/decisions/ADR-002-provide
 
 ## Agent layer (this repository)
 
-- `winning-ad-remake-workflow`: end-to-end evidence, generation approval, quality control, and paused Meta workflow.
+- `winning-ad-remake-workflow`: end-to-end evidence, generation approval, quality control, and the Meta campaign step.
+- `meta-ads-usage`: Meta's ads MCP server and Ads CLI, with the paused-by-default, read-back, and separate-approval rules for Meta campaigns. Meta publishes no official Skill.
 - `provider-policy`: the shared rules for every provider call (authentication check, approval before spend, no silent retry or batch expansion, output retention, and the free path when nothing is connected).
 - `providers`: routing directory with each vendor's official source, pinned ref, license, route order, and check date.
 - `free-fallback-mode`: no-connection path from free public ad libraries and local analysis scripts to a complete remake pack, without rendering.
