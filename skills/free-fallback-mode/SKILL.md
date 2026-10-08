@@ -189,7 +189,7 @@ Say this plainly in the final message, next to the list of delivered files.
 
 - **Local generation.** ComfyUI, Wan, and LTX-Video can run on the user's own machine, depending on GPU and memory. This Skill does not install, configure, or run them; the user may paste the prompts there.
 - **Pika free credits.** On 2026-10-07, Pika's free account credits were the only free hosted tier found. This is a dated observation, not verified for the current session. Using it requires a Pika account and the `pika` MCP server enabled and authenticated by the user, which takes the generation stage out of this mode: follow `provider-policy` and the Pika entry in `providers`, since the batch still consumes the account's credits.
-- **A native image or video tool** offered by the session is an engine too: confirm it is present, state its cost or mark it **unknown**, and get approval before a batch.
+- **A native image or video tool** offered by the session is an engine too: confirm it is present and state its cost, marking it **unknown** when it is not known. Get approval before a batch under `provider-policy` section 3; a cost marked **unknown** cannot be approved.
 
 ## 8. Completion
 
