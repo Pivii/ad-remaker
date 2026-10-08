@@ -126,7 +126,7 @@ Pika's plugin declares its own `pika` MCP server with the same URL as this plugi
 - `docs/service-matrix.md`: integration readiness states without unsupported availability claims.
 - `docs/provenance/`: verbatim vendor source texts kept for provenance.
 - `docs/decisions/`: architecture decisions.
-- `docs/brand/`: logo files and the logo brief with its usage rules.
+- `docs/brand/`: logo files, the logo brief with its usage rules, and the showcase page design handoff.
 - `scripts/validate_distribution.py`: local structural and safety validator, for both runtimes.
 - `scripts/sync_claude_agent.py`: regenerates the subagent body from `SOUL.md`.
 - `scripts/install_provider_skills.sh`: installs pinned official vendor Skills into the profile, then runs `hermes skills audit`.
