@@ -80,7 +80,7 @@ The repository root is also a Claude Code plugin (ADR-003). It reuses `skills/` 
 - `agents/ad-remaker.md`: the `ad-remaker` subagent. Its body is `SOUL.md`, written by `scripts/sync_claude_agent.py`.
 - `.mcp.json`: the same vendor servers as `config.yaml` `mcp_servers`, under the same names and URLs.
 
-Claude Code starts a plugin's MCP servers whenever the plugin is enabled; there is no per-server `enabled: false`. Every declared server uses OAuth and stays unauthenticated until the user signs in. Users turn off the vendors they do not pay for in `/mcp` or with `deniedMcpServers` (see `README.md`). `scripts/validate_distribution.py` fails when the subagent body differs from `SOUL.md`, when the two MCP declarations differ, or when the plugin version differs from `distribution.yaml`.
+Claude Code starts a plugin's MCP servers whenever the plugin is enabled; there is no per-server `enabled: false`. Every declared server uses OAuth and stays unauthenticated until the user signs in. Users turn off the vendors they do not pay for in `/mcp` or with `deniedMcpServers` (see `docs/claude-code-setup.md`). `scripts/validate_distribution.py` fails when the subagent body differs from `SOUL.md`, when the two MCP declarations differ, or when the plugin version differs from `distribution.yaml`.
 
 ### Codex CLI and Desktop plugin
 
@@ -88,7 +88,7 @@ Codex reuses the same canonical `skills/` tree (ADR-005). `.codex-plugin/plugin.
 
 Local installation consumes the tracked-file allowlisted export from `scripts/export_codex_package.py`, never a live development clone. Private Git installation consumes a clean Git snapshot. Brand data, sessions, outputs and credentials belong outside the package/cache. Contributor context is not operating context; start tasks from the user's working project.
 
-Vendor MCP servers and vendor Skills are optional per user and not bundled into Codex. The plugin starts no vendor servers; existing user tools can still be present. Users explicitly add/disable/remove the desired server in Codex configuration and authenticate separately. No Codex OAuth/Meta client-ID behavior or live provider capability is verified by parsing its configuration. FFmpeg remains Claude-only under ADR-004. CLI and Desktop are required targets. Headless checks of the Desktop-bundled backend are distinct from actual Plugins Directory/composer verification; the latter remains required before issue #22 is complete. Exact commands, tested versions, and remaining surface checks are in `README.md` and `tests/README.md`.
+Vendor MCP servers and vendor Skills are optional per user and not bundled into Codex. The plugin starts no vendor servers; existing user tools can still be present. Users explicitly add/disable/remove the desired server in Codex configuration and authenticate separately. No Codex OAuth/Meta client-ID behavior or live provider capability is verified by parsing its configuration. FFmpeg remains Claude-only under ADR-004. CLI and Desktop are required targets. Headless checks of the Desktop-bundled backend are distinct from actual Plugins Directory/composer verification; the latter remains required before issue #22 is complete. Exact commands, tested versions, and remaining surface checks are in `docs/codex-setup.md` and `tests/README.md`.
 
 ### Scheduled jobs
 

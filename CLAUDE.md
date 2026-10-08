@@ -27,6 +27,8 @@ Ad Remaker finds competitor ads that show public performance signals, deconstruc
 | `docs/decisions/` | Architecture decisions (ADR-001 profile distribution, ADR-002 provider Skill layers, ADR-003 Claude Code plugin, ADR-004 optional Claude Code-only ffmpeg-skill) | This repo |
 | `docs/ad-remaker-complete-operating-report.md` | Translated historical report, dated October 7, 2026 | Source material, do not rewrite |
 | `docs/service-matrix.md` | Integration readiness per service | Update when a status changes |
+| `docs/claude-code-setup.md`, `docs/codex-setup.md` | Per-runtime install details linked from the README | Update when an install step or tested version changes |
+| `CONTRIBUTING.md`, `.github/` | Human contributor guide, issue templates, PR checklist | Keep in line with the rules in this file |
 | `scripts/validate_distribution.py` | Structural and safety validator | Keep in sync with required files |
 | `scripts/sync_claude_agent.py` | Rewrites the body of `agents/ad-remaker.md` from `SOUL.md` | This repo |
 | `scripts/install_provider_skills.sh` | Installs the vendor Skills a user names, at their pinned commit, then runs `hermes skills audit` | Reads the pin table in `skills/providers/SKILL.md` |

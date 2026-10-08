@@ -42,7 +42,7 @@ The paid vendor repositories checked on 2026-10-07 had no release tag, so their 
 
 ## Installing vendor Skills
 
-For Hermes, install only the vendors you pay for. Free mode needs no vendor Skill. Claude Code users may separately install the optional free local ffmpeg-skill at its pin, following the root `README.md`; it is never installed into Hermes.
+For Hermes, install only the vendors you pay for. Free mode needs no vendor Skill. Claude Code users may separately install the optional free local ffmpeg-skill at its pin, following `docs/claude-code-setup.md` in the distribution repository; it is never installed into Hermes.
 
 ```bash
 scripts/install_provider_skills.sh pika                    # into the ad-remaker profile
@@ -61,7 +61,7 @@ Updating is a deliberate change, never automatic:
 
 1. Read the vendor's diff between the current pin and the new commit, and re-check the license.
 2. Change `Pinned ref`, `License`, and `Checked` in the table, and bump `version` in `distribution.yaml`.
-3. For Hermes-installable rows, reinstall with the script, which runs `hermes skills audit`. For Claude Code-only tools, repeat the pinned install in the root `README.md`. External Skills run with the agent's permissions, so review their source before using them.
+3. For Hermes-installable rows, reinstall with the script, which runs `hermes skills audit`. For Claude Code-only tools, repeat the pinned install in `docs/claude-code-setup.md`. External Skills run with the agent's permissions, so review their source before using them.
 
 A thin entry with a pin (Higgsfield, fal.ai) can move back to `Install` `hermes` once the vendor Skill at the new commit passes the Hermes skills guard, for example after the vendor drops `curl | sh` from it. Check with `hermes skills inspect <pinned url>` and a scratch profile install first.
 
@@ -132,6 +132,6 @@ Route order lists the routes a vendor offers, in the order to try them. Use an e
 ### ffmpeg-skill (optional, Claude Code only)
 
 - Community source, not an official FFmpeg Skill: [`kajisho5/ffmpeg-skill` at the pinned commit](https://github.com/kajisho5/ffmpeg-skill/tree/008333aaf6722083392eb6bd8bd67b59884a2a26), version 2.5.1, root `SKILL.md`; MIT from its `LICENSE`, checked 2026-10-08. It drives local FFmpeg with Python 3.9 or later; no account, cloud API, or paid credits are required.
-- Install separately in a Claude Code working project, outside this distribution, using the pinned command in the root `README.md`. Not bundled, not a dependency, and no optional upstream MCP server is declared here.
+- Install separately in a Claude Code working project, outside this distribution, using the pinned command in `docs/claude-code-setup.md` in the distribution repository. Not bundled, not a dependency, and no optional upstream MCP server is declared here.
 - `Install` is `no` for Hermes: the URL installer aborts on literal `scripts/*.py`, and the GitHub source requires a sub-path. The guard never ran, so its verdict is **unknown**, not SAFE or dangerous (ADR-004). Never copy its Skill into Hermes or use `npx ffmpeg-skill` to bypass the guard.
 - Route: installed local scripts only when the actual script and its required dependencies are available. Analysis uses `scenes.py`, `look.py`, `cut.py --segments`, and optionally `caption.py --transcribe`; finishing uses `fit.py`, `caption.py`, `redact.py`, `render.py`, and `check.py`. Follow the gated recipes in `free-fallback-mode` section 4 and the workflow's QC rules. Otherwise use our local analysis scripts and existing transcription path; report finishing gaps explicitly.

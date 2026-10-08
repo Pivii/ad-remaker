@@ -43,6 +43,7 @@ REQUIRED_FILES = (
     ".gitignore",
     ".mcp.json",
     "AGENTS.md",
+    "CONTRIBUTING.md",
     "LICENSE",
     "README.md",
     "SOUL.md",
