@@ -36,7 +36,7 @@ Provider rules live in the local `provider-policy` Skill. Official vendor Skills
 - `docs/service-matrix.md`: integration readiness states without unsupported availability claims.
 - `docs/provenance/`: verbatim vendor source texts kept for provenance.
 - `docs/decisions/`: architecture decisions.
-- `docs/brand/`: logo files and the logo brief with its usage rules.
+- `docs/brand/`: logo files, the logo brief with its usage rules, and the showcase page design handoff.
 - `scripts/validate_distribution.py`: local structural and safety validator.
 - `scripts/install_provider_skills.sh`: installs pinned official vendor Skills into the profile, then runs `hermes skills audit`.
 - `tests/`: acceptance guidance and redistributable fixtures.
