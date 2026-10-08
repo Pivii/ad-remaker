@@ -23,6 +23,7 @@ Run this check before research, analysis, generation, and campaign preparation, 
    python3 -c "import faster_whisper" 2>/dev/null && echo "faster-whisper: present" || echo "faster-whisper: missing"
    ```
 
+   Check the native web search and browser tools the same way, with one harmless query or page load. A fresh profile may have no web search backend (it needs the user's own search API key) or may miss browser dependencies. If neither works, say so and ask the user for library URLs, files, or screenshots; never report research that could not be run.
 3. Tell the user which stages run on a provider, which run on this free path, and which local tools are missing, for example:
 
    | Stage | Route | Note |
@@ -49,7 +50,7 @@ Search the libraries that match the user's market and channels. Entry points as 
 | LinkedIn Ad Library | `https://www.linkedin.com/ad-library/` |
 | Microsoft Ads Ad Library | `https://adlibrary.ads.microsoft.com/` |
 
-Use the library websites through the browser and web search. The Meta Ad Library API is gated and, as observed on 2026-10-07, limited to ads delivered in the EU or UK and to political or social-issue ads, so it does not replace the website for other commercial research.
+Use the library websites through whichever browser or web search tool passed the check in section 1. The Meta Ad Library API is gated and, as observed on 2026-10-07, limited to ads delivered in the EU or UK and to political or social-issue ads, so it does not replace the website for other commercial research.
 
 For each candidate, record the URL, advertiser, capture date, first-seen or start date, active status, platforms and placements, number of visible variants, format, and any engagement shown publicly. Apply the label rules of the workflow: **fact** for what the page shows, **estimate** for inferences such as run length from a start date, **opinion** for creative judgment, **unknown** for the rest. Any figure a library displays is a public signal: quote it with its source and capture date, never as spend, conversion, or profitability.
 
