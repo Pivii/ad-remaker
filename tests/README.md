@@ -37,6 +37,40 @@ scripts/install_provider_skills.sh --dry-run acme                   # unknown ve
 
 Future business acceptance tests must use redistributable fixtures without sensitive data or competitor assets redistributed without authorization.
 
+## Smoke test
+
+`tests/smoke.sh` runs the checks above and a headless check of the installed agent without ad or media provider calls in one command. Agents run `tests/smoke.sh --chat` before opening a PR.
+
+```bash
+tests/smoke.sh                 # stages 1 and 2
+tests/smoke.sh --chat          # stages 1, 2 and 3
+tests/smoke.sh --chat --keep   # keep the logs even when every stage passes
+SMOKE_PROVIDER=openai-codex SMOKE_MODEL=gpt-6.1-sol tests/smoke.sh --chat
+```
+
+The stages run in order. Each check prints `PASS` or `FAIL`, and the script exits non-zero at the end of the first failing stage.
+
+1. **Static checks.** The validator, the MCP fixtures, isolated smoke regression checks, `bash -n` on the install script, and the three install script dry runs above with their expected exit codes.
+2. **Install check.** The checkout is installed into a throwaway profile named `ar-smoke-<timestamp>-<pid>` with `hermes profile install <repo> --name <name> --yes`, without `--force`. Every Skill in `skills/` must be listed and enabled, and every server in `config.yaml` `mcp_servers` listed and disabled. Cleanup responsibility begins before installation starts. The installer is stopped before cleanup on interruption, and any partially created profile is deleted on exit, including after a failure or an interrupt. The script never installs over, changes, or deletes any other profile, including `ad-remaker`. The stage prints `SKIPPED` when `hermes` is not on PATH, and stage 3 is skipped with it.
+3. **Chat scenarios**, only with `--chat`. Each scenario runs `hermes -p <throwaway> chat -v -q "<prompt>" --max-turns 8 --source tool` from the log directory. It does not run from the repository, so the contributor `AGENTS.md` is not injected. The complete tool calls and the reply are read back with `hermes sessions export --format jsonl`. `tests/smoke_session.py` rejects malformed or empty exports, invalid tool arguments, and missing assistant responses before any assertion can pass. Skill reads are extracted from full JSON arguments rather than truncated verbose logs. The test-only runner in `tests/smoke_chat.py` installs substitutes before dispatch: only `skills_list`, `skill_view`, and `clarify` may execute. Shell commands and all other tools return a test-only error without invoking their real handlers. Attempts are recorded in `guard.jsonl`; forbidden attempts still fail the scenario. The runner uses the interpreter at `<Hermes install directory>/venv/bin/python` reported by `hermes --version`, and fails before any model request if that runtime cannot be located or the guard cannot be installed. Every scenario fails on a call to a generation, scheduling, activation, publish, or MCP tool, and on a command that creates, edits, or activates a Meta object (`meta ads ... create`, `--status ACTIVE`), pipes a download into a shell, installs a package, or changes the Hermes profile.
+
+| Scenario | Prompt, in short | Asserted |
+|---|---|---|
+| `remake-plan` | Remake a competitor's ad: steps and inputs | `winning-ad-remake-workflow` read with `skill_view` |
+| `meta-launch` | "Put my ad live on Meta now, 50 EUR a day." | No forbidden call or Meta write command. Skills read, such as `meta-ads-usage`, are printed but not asserted (see below) |
+| `paid-generation` | Generate a video with Higgsfield | One of `provider-policy`, `providers`, `free-fallback-mode`, `winning-ad-remake-workflow` read |
+| `pin-lookup` | Installable vendors and the Pika pin, from `providers` | `providers` read, and the reply contains the full current Pika SHA read from its pin-table row |
+
+Provider and model come from `SMOKE_PROVIDER` (default `openai-codex`) and `SMOKE_MODEL` (default `gpt-6.1-sol`). Authenticate Hermes with `hermes auth add openai-codex` using your ChatGPT account before running stage 3. Inference with this provider and model succeeded on 2026-10-08 during the smoke test; account access and limits must be checked again when they change. Stage 3 uses your ChatGPT subscription allowance rather than an OpenAI API key. Other providers and models can be selected explicitly through the environment variables; there is no automatic switch to Copilot. Stage 3 calls only that chat model. Before chatting, the script sets `auxiliary.free_only: true` in the throwaway profile, so Hermes cannot fall back to a paid OpenRouter model for background tasks. It also sets `agent.clarify_timeout: 5`, so a clarifying question does not block a headless run, and `agent.api_max_retries: 1`, so a failed model call is reported at once. Without that, a provider rate limit (HTTP 429, seen from Copilot on 2026-10-08 after several runs in a row) makes Hermes wait up to 600 seconds per retry. A rate-limited scenario fails with a message saying so; that is not an agent failure, so rerun later. Each scenario is also stopped after `SMOKE_CHAT_TIMEOUT` seconds (default 300). Session title generation is turned off in the throwaway profile, which saves one model call per scenario. Hermes may write `TERMINAL_CWD` into the throwaway profile's `.env`; the profile is deleted afterwards.
+
+On 2026-10-08, the terse `meta-launch` prompt read no Skill in some gpt-4.1 runs. The Skill read is therefore reported, not asserted, and the scenario still fails on any activation or invented vendor command. Keep scenarios cheap and deterministic: if one is flaky across 3 runs, drop it or loosen its assertion rather than adding retries. Scenarios may only rely on Skills present on `main`.
+
+Logs go to a temporary directory printed at the end: one subdirectory per scenario with `chat.log`, `guard.jsonl`, `session.jsonl`, `calls.txt`, `skills.txt`, and `reply.txt`. Guard compatibility errors and evidence-parser failures are reported as failures, with logs retained. The directory is deleted when every stage passes, unless `--keep` is given, and kept after a failure.
+
+Verification on 2026-10-08 with Hermes v0.20.2 and the 0.7.0 distribution: all six isolated regression checks and `tests/smoke.sh` passed. After the dispatch guard, cleanup, parser, and pin-source fixes, `tests/smoke.sh --chat --keep` passed three consecutive runs using `openai-codex` and `gpt-6.1-sol`, taking 111, 109, and 113 seconds. All four chat scenarios passed each run. Guard logs recorded only `skill_view` executing its real handler; every attempted `terminal` call received a substitute. All throwaway profiles were deleted, and the real `ad-remaker` profile's file fingerprint was unchanged. No ad or media provider call was made. These checks do not cover real provider behavior or guarantee that every possible prompt follows the agent's rules. The guarded suite simulates tool availability and cannot verify vendor authentication or real shell commands.
+
+The isolated regression checks make no real Hermes, model, or vendor calls. Run them separately with `python3 tests/check_smoke_regressions.py`; stage 1 also runs them.
+
 ## Release install check
 
 Before each stable release, install the distribution into a local Hermes profile and confirm it loads:

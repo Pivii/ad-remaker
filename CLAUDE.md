@@ -67,6 +67,14 @@ python3 tests/check_mcp_fixtures.py   # the validator must reject every invalid 
 
 PyYAML is optional; the validator falls back to a minimal parser without it. For release testing, also install the profile locally with `hermes profile install` and confirm it loads.
 
+Before opening a PR, run the headless smoke test and report its output:
+
+```bash
+tests/smoke.sh --chat
+```
+
+It runs the checks above, installs the checkout into a throwaway `ar-smoke-*` profile that it always deletes, and runs a few headless chat scenarios. It never touches the `ad-remaker` profile and never calls an ad or media provider; stage 3 calls only the chat model. Stages and scenarios are documented in `tests/README.md`.
+
 ## Agent skills
 
 ### Issue tracker
