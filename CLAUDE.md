@@ -24,7 +24,7 @@ Ad Remaker finds competitor ads that show public performance signals, deconstruc
 | `skills/winning-ad-remake-workflow/references/upstream.md` | Source workflow text as supplied, kept for provenance | Do not edit |
 | `skills/providers/SKILL.md` | Vendor routing directory and the pin table (single source of truth for vendor Skill pins) | This repo |
 | `docs/provenance/<vendor>.md` | Vendor source texts from the removed `*-usage` Skills, kept verbatim | Do not edit |
-| `docs/decisions/` | Architecture decisions (ADR-001 profile distribution, ADR-002 provider Skill layers, ADR-003 Claude Code plugin) | This repo |
+| `docs/decisions/` | Architecture decisions (ADR-001 profile distribution, ADR-002 provider Skill layers, ADR-003 Claude Code plugin, ADR-004 optional Claude Code-only ffmpeg-skill) | This repo |
 | `docs/ad-remaker-complete-operating-report.md` | Translated historical report, dated October 7, 2026 | Source material, do not rewrite |
 | `docs/service-matrix.md` | Integration readiness per service | Update when a status changes |
 | `scripts/validate_distribution.py` | Structural and safety validator | Keep in sync with required files |
@@ -40,6 +40,7 @@ Skills are split into two layers (ADR-002).
   - `meta-ads-usage` covers Meta's ads MCP server and Ads CLI, and holds the Meta rules (paused by default, read-back, separate approval for activation, scheduling, and spend). Write a Meta campaign rule here and nowhere else. Meta publishes no official Skill.
   - `provider-policy` holds the rules shared by every provider call (auth check, approval before spend, no silent retry or batch expansion, download outputs, free path when nothing is connected). Write a shared provider rule here and nowhere else.
   - `providers` is the routing directory: per vendor, the official source, pinned ref, license, route order, and check date.
+- Optional local tool, not in this repo: community `kajisho5/ffmpeg-skill`, installed separately at its pin only for Claude Code (ADR-004). Its `Install` `no` row makes the Hermes installer refuse it; never copy it into Hermes or use `npx ffmpeg-skill` there. Our scripts remain the distributed analysis path.
 - Vendor layer, not in this repo: official vendor Skills installed by reference with `scripts/install_provider_skills.sh`, only for pin table rows with `Install` `hermes` (Pika on 2026-10-08). Vendors whose Skills the Hermes skills guard blocks (Higgsfield, fal.ai) are thin entries with `Install` `no`. Never copy or patch a vendor Skill into `skills/` to get around the guard.
 - Changing a vendor pin is deliberate: read the vendor diff, re-check the license, update `Pinned ref`, `License`, and `Checked` in the pin table, bump the version, and run `hermes skills audit` after reinstalling.
 - When editing `winning-ad-remake-workflow`, change `SKILL.md` only. Keep `references/upstream.md` verbatim and keep the link to it at the bottom of `SKILL.md`. Never edit `docs/provenance/`.

@@ -20,6 +20,7 @@ Last reviewed on October 8, 2026. Provider Skills follow the two-layer split in 
 | Shared rules `provider-policy` | present, pending audit | not applicable |
 | Routing directory `providers` | present, pending audit | not applicable |
 | Free fallback `free-fallback-mode` (local scripts, no provider) | present, pending audit | not applicable |
+| ffmpeg-skill (community local tool) | optional Claude Code-only Skill, pinned MIT source; scratch install and scenes/look verified on 2026-10-08; Hermes v0.20.2 fetch fails, guard verdict unknown (ADR-004) | not declared: optional upstream MCP is not part of this distribution |
 | Brandsearch | no official Skill; thin entry in `providers` | not declared: a hosted MCP exists, but its endpoint is not public |
 | TrendTrack | no official Skill; `providers` links the official agent guide | configured, disabled by default |
 | Higgsfield | thin entry; official Skill `higgsfield-generate` pinned as a source to read, blocked by the Hermes v0.20.2 skills guard | configured, disabled by default |
