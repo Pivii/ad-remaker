@@ -2,7 +2,8 @@
 """Write one silent clip per detected shot (shots/shot-NNN.mp4) plus the cut list they follow (cut-list.csv).
 
 Shots are detected with PySceneDetect, then cut and re-encoded with ffmpeg without audio
-or source metadata so that every clip starts exactly on its cut.
+or source metadata so that every clip starts exactly on its cut. Odd frame sizes are cropped
+by at most one pixel to the even size the encoders require.
 """
 
 from __future__ import annotations
@@ -11,12 +12,14 @@ import sys
 
 from _media import detect_shots, parse_args, report, require, run, write_cut_list
 
+EVEN_CROP = "crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0"
+
 
 def video_encoder(ffmpeg: str) -> list[str]:
     encoders = run([ffmpeg, "-hide_banner", "-encoders"]).stdout
     if " libx264 " in encoders:
         return ["-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p"]
-    return ["-c:v", "mpeg4", "-q:v", "3"]
+    return ["-c:v", "mpeg4", "-q:v", "3", "-pix_fmt", "yuv420p"]
 
 
 def main() -> int:
@@ -32,7 +35,7 @@ def main() -> int:
         run([
             tools["ffmpeg"], "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
             "-ss", f"{start:.3f}", "-i", str(source), "-t", f"{end - start:.3f}",
-            "-an", "-sn", "-dn", "-map_metadata", "-1", *encoder, str(clip),
+            "-an", "-sn", "-dn", "-map_metadata", "-1", "-vf", EVEN_CROP, *encoder, str(clip),
         ])
         written.append(clip)
     report(written)
