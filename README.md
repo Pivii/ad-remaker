@@ -5,6 +5,10 @@
   </picture>
 </p>
 
+<p align="center">
+  <a href="https://ad-remaker.pivi.studio"><strong>ad-remaker.pivi.studio</strong></a>
+</p>
+
 # Ad Remaker
 
 Ad Remaker is an independent agent that finds competitor ads with public performance signals, deconstructs their creative mechanics, and adapts them to your brand's real product. It never copies an ad exactly, never invents claims, and never spends money or publishes anything without your explicit approval. The same files install as a Hermes profile, a Claude Code plugin, or a Codex plugin for CLI and Desktop.
