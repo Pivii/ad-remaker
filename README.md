@@ -17,7 +17,7 @@ This is an independent, unofficial adaptation. According to the maintainer, the 
 
 The main workflow runs these stages in order. Steps marked **you approve** stop until you give an explicit yes.
 
-**Setup, once.** On your first relevant ad task, the agent offers a short setup before any research: the free path, services you already use, or a choice per stage (research, video creation, delivery). **Free for everything** completes setup with no login. Your choices are saved outside Git and plugin caches and reused next time, each product keeps its own confirmed brief, and choosing a provider never approves any spending. Then the agent continues your original request.
+**Setup, once.** On your first relevant ad task, the agent offers a short setup before any research, so you can keep the free path or use services you already use, for every stage (research, video creation, delivery) or stage by stage. The wording and the suggested default vary by runtime and model. Answering **Free for everything** completes setup with no login, even when that phrase is not one of the options shown. Your choices are saved outside Git and plugin caches and reused next time, each product keeps its own confirmed brief, and choosing a provider never approves any spending. Then the agent continues your original request.
 
 1. **Find** competitor ads with public performance signals, through a connected ad-intelligence tool or the free public ad libraries. Run length, variants, and visible engagement are signals, never proof of profitability; every statement is labeled fact, estimate, opinion, or unknown.
 2. **Deconstruct** the creative mechanics: hook, shot sequence, framing, pacing, on-screen text, voice, and music, with a cut list, frame sheets, and a transcript when the local tools are available. Anything the evidence does not establish is marked unknown.
@@ -111,7 +111,7 @@ Replace the text in angle brackets. Each example says what the agent asks before
 Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.
 ```
 
-On a first run, the agent offers setup before searching; answer **Free for everything** to save the free path without any login, and it then continues this request. The agent reports which stages run on the free path and which tools are missing. If no browser or search tool works in your runtime, it asks you for library links or screenshots instead of inventing results. Nothing here costs money, so there is no approval step; spend, revenue, and ROAS stay marked unknown.
+On a first run, the agent offers setup before searching; the choices it shows vary by runtime. Answering **Free for everything** saves the free path without any login, and it then continues this request. The agent reports which stages run on the free path and which tools are missing. If no browser or search tool works in your runtime, it asks you for library links or screenshots instead of inventing results. Nothing here costs money, so there is no approval step; spend, revenue, and ROAS stay marked unknown.
 
 **2. Full remake for your brand**
 

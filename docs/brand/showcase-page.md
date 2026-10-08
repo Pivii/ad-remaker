@@ -126,7 +126,7 @@ The Try it section quotes the README's "Usage" section; do not write new prompts
 
 | Card | Title | Prompt | What to expect |
 |---|---|---|---|
-| 01 | Free first run, no provider connected | `Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.` | On a first run, the agent offers setup before searching; answer **Free for everything** to save the free path without any login, and it then continues this request. |
+| 01 | Free first run, no provider connected | `Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.` | On a first run, the agent offers setup before searching; the choices it shows vary by runtime. Answering **Free for everything** saves the free path without any login, and it then continues this request. |
 | 02 | Full remake for your brand | `Here is my product page <url>. Find 3 competitor ads with real performance signals and propose a remake adapted to my product. Estimate costs before generating anything.` | Before any paid generation, the agent shows the batch with units, prices, retry margin, total, and currency, and waits for you to approve that exact batch. |
 | 03 | Analyze an ad you already have | `Deconstruct this ad (<file or link>): hook, structure, offer, visual mechanics, and what I can reuse without copying.` | The agent asks before downloading a public video or installing a missing local tool such as `ffmpeg` or `scenedetect`. |
 
