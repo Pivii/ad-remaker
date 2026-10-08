@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Ad Remaker Hermes profile distribution and its Claude Code plugin."""
+"""Validate the Ad Remaker Hermes profile distribution and its Claude Code and Codex plugins."""
 
 from __future__ import annotations
 
@@ -19,6 +19,13 @@ except ImportError:  # PyYAML is optional.
 ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_FILES = (
+    ".codex-plugin/plugin.json",
+    "docs/decisions/ADR-005-codex-skills-only.md",
+    "scripts/export_codex_package.py",
+    "scripts/sync_skill_rules.py",
+    "tests/check_codex.py",
+    "tests/check_codex_chat.py",
+    "tests/codex_guard.py",
     ".claude-plugin/marketplace.json",
     ".claude-plugin/plugin.json",
     ".gitignore",
@@ -694,6 +701,27 @@ def validate_claude_plugin(errors: list[str]) -> None:
             fail(errors, f"{PLUGIN_MCP}: mcpServers.{name} url must match config.yaml ({hermes_server.get('url')!r})")
 
 
+def validate_codex_plugin(errors: list[str]) -> None:
+    manifest = load_json(".codex-plugin/plugin.json", errors)
+    distribution = load_yaml_mapping("distribution.yaml", errors) or {}
+    if not isinstance(manifest, dict):
+        fail(errors, ".codex-plugin/plugin.json: must be an object")
+    elif (manifest.get("name") != PLUGIN_NAME
+          or manifest.get("version") != distribution.get("version")
+          or manifest.get("skills") != "./skills"
+          or manifest.get("mcpServers") != {}):
+        fail(errors, ".codex-plugin/plugin.json: identity/version/skills must match and mcpServers must be explicitly empty")
+    if not (ROOT / SOUL_FILE).is_file():
+        return
+    expected = (ROOT / SOUL_FILE).read_text(encoding="utf-8")
+    for entry in sorted((ROOT / "skills").glob("*/SKILL.md")):
+        reference = entry.parent / "references/agent-rules.md"
+        if not reference.is_file() or reference.read_text(encoding="utf-8") != expected:
+            fail(errors, f"{reference.relative_to(ROOT)}: generated rules differ from SOUL.md; run python3 scripts/sync_skill_rules.py")
+        if "[the agent rules](references/agent-rules.md)" not in entry.read_text(encoding="utf-8"):
+            fail(errors, f"{entry.relative_to(ROOT)}: required rule-loading link missing")
+
+
 def validate_forbidden_files(errors: list[str]) -> None:
     for path in ROOT.rglob("*"):
         relative = path.relative_to(ROOT)
@@ -733,6 +761,7 @@ def main(argv: list[str] | None = None) -> int:
     validate_skills(errors)
     validate_provider_pins(errors)
     validate_claude_plugin(errors)
+    validate_codex_plugin(errors)
     validate_forbidden_files(errors)
 
     if errors:

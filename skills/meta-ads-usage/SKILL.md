@@ -5,6 +5,13 @@ description: Read before any Meta ad action or command (go live, activate, creat
 
 # Meta Ads usage
 
+## Required rule loading
+
+Before handling the task, read [the agent rules](references/agent-rules.md), generated from the canonical `SOUL.md`. Read the sibling `provider-policy` and `providers` Skills before any Meta command, instructions, or account action. Resolve sibling Skills relative to this installed Skill directory, not the working project. If a required file is missing or unreadable, report it and stop the affected operation. Do not infer rule loading from installation or from this summary.
+
+In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
+
+
 Meta publishes no official agent Skill (checked on 2026-10-08), so this local Skill links Meta's own documentation and holds the rules for Meta campaign objects. `provider-policy` applies to every Meta call; this Skill adds the Meta-specific rules. Use `providers` for the route order.
 
 Every source, tool name, and command below was checked against Meta's documentation on 2026-10-08. Treat it as a dated snapshot: inspect the live tool list or `--help` output before relying on it.

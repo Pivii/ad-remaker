@@ -13,5 +13,7 @@
     "ad-remake",
     "creative-analysis",
     "meta-ads"
-  ]
+  ],
+  "skills": "./skills",
+  "mcpServers": {}
 }

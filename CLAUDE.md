@@ -2,7 +2,7 @@
 
 # Working on this repository
 
-This repository is the source of the Ad Remaker agent, packaged as a Hermes profile distribution and, from the same files, as a Claude Code plugin (ADR-003). You are editing the agent, not acting as it. Read `SOUL.md` and the Skills to understand the agent's behavior, but do not adopt its persona while working here.
+This repository is the source of the Ad Remaker agent, packaged as a Hermes profile distribution and, from the same files, as a Claude Code plugin (ADR-003) and a Codex CLI plugin (ADR-005). You are editing the agent, not acting as it. Read `SOUL.md` and the Skills to understand the agent's behavior, but do not adopt its persona while working here.
 
 ## What the agent does
 
@@ -53,9 +53,12 @@ Skills are split into two layers (ADR-002).
 - `hermes profile update` preserves an installed `config.yaml` unless `--force-config` is passed, so servers declared later do not reach existing installs automatically.
 - Any new cron job must ship paused and must never trigger spending, publication, or campaign activation.
 - If you add a required file, add it to `REQUIRED_FILES` in `scripts/validate_distribution.py`.
-- After any change to `SOUL.md`, run `python3 scripts/sync_claude_agent.py` and commit `agents/ad-remaker.md` with it. Never edit the subagent body by hand.
+- After any change to `SOUL.md`, run `python3 scripts/sync_claude_agent.py` and `python3 scripts/sync_skill_rules.py`; commit the subagent and all generated Skill rule references with it. Never edit the subagent body by hand.
 - Declare an MCP server in both `config.yaml` (`enabled: false`) and `.mcp.json`, under the same name and URL.
-- Keep `version` in `.claude-plugin/plugin.json` equal to `version` in `distribution.yaml`.
+- Keep `version` in both plugin manifests equal to `version` in `distribution.yaml`.
+- Codex `.codex-plugin/plugin.json` must keep `mcpServers: {}`. Do not bundle vendor endpoints or copy Hermes enabled flags into it.
+- Export local Codex installation with `scripts/export_codex_package.py`; do not install the live development clone.
+- Run `python3 tests/check_codex.py` for Codex distribution changes. Behavioral checks are separate: `python3 tests/check_codex_chat.py --chat`, using the reviewed test-only pre-dispatch guard.
 - Bump `version` in `distribution.yaml` for every release.
 
 ## Validate

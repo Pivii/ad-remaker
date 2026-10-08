@@ -13,6 +13,8 @@ Tests must verify the distribution before each stable release.
 - the pin table in `skills/providers/SKILL.md` is well formed: known vendors, a 40-character commit or `none` per row, an `Install` value (`hermes` only with a pin), a license note, and a check date;
 - the English-facing operating report exists and the old French-facing path does not;
 - the Claude Code plugin: `.claude-plugin/plugin.json` is named `ad-remaker` with the `distribution.yaml` version, `.claude-plugin/marketplace.json` lists only this repository, and the body of `agents/ad-remaker.md` equals `SOUL.md` (fix with `python3 scripts/sync_claude_agent.py`);
+- the Codex manifest uses the canonical identity/version, Skills path and an explicit empty MCP mapping;
+- each Skill first loads its generated agent-rule reference and the validator rejects drift from `SOUL.md`;
 - `.mcp.json` declares the same server names and URLs as `config.yaml` `mcp_servers`, without literal secrets.
 
 Run:
@@ -151,3 +153,32 @@ Caption burning and transcription were not exercised: this FFmpeg lacks `subtitl
 Distribution 0.7.0 validation passed under both the stdlib parser (`python3`, also `python3 -S`) and PyYAML (existing Hermes venv Python). All 11 MCP fixtures passed under both parsers. Provider installer dry runs returned 3 for `ffmpeg-skill` and mixed `pika ffmpeg-skill`, with no install command printed; Pika's existing pinned install and audit commands were unchanged, exit 0; unknown vendor `acme` returned 2. `bash -n` and `git diff --check` passed.
 
 Both Claude Code manifests validated; the plugin manifest had only the expected root `CLAUDE.md` warning. An isolated `CLAUDE_CONFIG_DIR` marketplace install loaded Ad Remaker 0.7.0 with 5 Skills, 1 agent, and the existing 5 MCP declarations; ffmpeg-skill remained separately installed in the scratch project. In a separate isolated `HERMES_HOME`, `hermes profile install <worktree> --name ad-remaker-issue13-scratch --yes`, `profile show`, `skills list`, and `mcp list` loaded 0.7.0 with 5 enabled local Skills, no hub Skills, and all 5 MCP servers disabled. No live connection or chat was tested, and the maintainer's profiles/configuration were untouched.
+
+## Codex CLI checks
+
+```bash
+python3 tests/check_codex.py
+python3 tests/check_codex.py --source Pivii/ad-remaker --ref main
+python3 tests/check_codex_chat.py                         # guard regressions only, no model
+python3 tests/check_codex_chat.py --chat --model gpt-6.1-sol --keep
+```
+
+The first check uses a throwaway `CODEX_HOME` and working directory outside the contributor checkout. It exports tracked files to a clean skills-only marketplace, creates ignored runtime/credential/worktree sentinels in an isolated source copy, and proves none appear in the export or installed cache. It compares all installed Skill/support files byte-for-byte. `skills/list` must discover exactly the five enabled plugin Skills under `ad-remaker:<name>`. It starts an ephemeral thread without a model turn and asserts `mcpServerStatus/list` is empty. It parses a disabled vendor entry with `mcp get`, removes it without logging in, updates/reinstalls, uninstalls and removes the cache/catalog. Local update changes a test-only version to prove a new package is selected; Git update refreshes the selected ref before reinstall. Real user config/auth/plugin-registration fingerprints must remain unchanged. Scratch files are always removed. Git checks use existing Git access, never vendor credentials.
+
+`codex mcp add --url` can immediately discover OAuth/login on CLI 0.160.0 and is deliberately not part of this model-free suite. An initial implementation probe was stopped while that command was pending; it may have contacted the vendor for OAuth discovery. No authentication completed, no campaign or generation call occurred, and its scratch directory was removed. Subsequent configuration checks write `enabled = false` in scratch TOML and only parse it. Do not claim the entire implementation run made zero provider contact.
+
+The chat check is separate from Hermes' openai-codex inference. It requires existing file-backed Codex ChatGPT authentication (`auth_mode: chatgpt`), copies it into a protected scratch directory, removes API-key environment overrides, and explicitly selects `gpt-6.1-sol` by default. It uses OpenAI inference through the ChatGPT subscription allowance; limits are account-specific and no monetary per-run price is asserted. No fallback to an API key or another model is permitted. Authentication and the entire scratch Codex home are deleted even when logs are kept.
+
+Before model requests, `hooks/list` must report exactly the enabled reviewed test-only `PreToolUse` hook; no additional hooks are accepted. The CLI explicitly trusts this vetted isolated definition with `--dangerously-bypass-hook-trust`. This flag is test machinery, not an installation instruction. The guard permits only `cat` with exact absolute installed `SKILL.md` and generated-rule paths, rejecting expansions, redirections, chains, other file reads, patches, MCP calls and all other tools. Apps/browser/computer tools are disabled, no MCP server is loaded, and the runtime sandbox is read-only as an additional boundary. The code-mode host remains enabled because this client routes shell through it; hooks guard its nested tool calls. Unit checks verify rejected bypass shapes. A real model canary must attempt a harmless scratch `touch` command, receive a hook denial, and leave no file before business scenarios run. A missing/disabled hook, failed canary, or unsupported runtime fails closed. Only approved instruction reads can dispatch in business scenarios; no local media processing is exercised.
+
+| Scenario | Verified behavior |
+|---|---|
+| Workflow | Explicit `ad-remaker:winning-ad-remake-workflow`; actual main/provider/routing/fallback Skill and generated-rule reads; free text pack and honest unknown capabilities |
+| Generation | Direct `ad-remaker:provider-policy`; provider/routing rule reads; unknown pricing/authentication, batch/cost approval required, no paid generation |
+| Meta | Direct `ad-remaker:meta-ads-usage`; Meta/provider/routing rule reads; paused draft, read-back, separate external-action approval and no write dispatch |
+
+Replies are checked for the listed behavior terms, and instruction reads are asserted from guard records independently of package installation. These are selected guarded scenarios, not proof of compliance for every prompt, implicit Skill selection, real media rendering, or live vendors. The read-only harness is disclosed in each prompt; policy decisions are read from installed files. Logs are temporary, deleted on success unless `--keep`, and retained on failure after removing auth/runtime state.
+
+Verification on October 8, 2026 with Codex CLI 0.160.0 and distribution 0.8.0: local install/discovery/no-MCP/support-file/sentinel/update/removal checks passed; canary plus all three behavioral scenarios passed using `gpt-6.1-sol` and ChatGPT allowance. The successful initial behavior run reported 331,657 input tokens (244,736 cached) and 3,538 output tokens across the four turns; these are client usage counters, not a currency price. Generated rules were read from the installed cache in every required operational scenario. No real media or external action was dispatched by the guarded suite.
+
+Desktop, IDE extension and cloud support are unverified. Desktop requires a manual check in a disposable configuration: record the app version, add the clean local marketplace through the client-supported flow, install `ad-remaker`, confirm all five Skills and no bundled provider servers in a new project outside the repo, and select the main workflow using the discovered selector. If the client cannot add the private/local catalog or resolve the Codex manifest, do not claim desktop support. Vendor OAuth, including Meta client-ID handling, must be tested only when the maintainer explicitly chooses a provider account and authorizes connection; these remain configured/unverified until the service-matrix evidence rule is satisfied.
