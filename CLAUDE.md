@@ -36,6 +36,7 @@ Ad Remaker finds competitor ads that show public performance signals, deconstruc
 Skills are split into two layers (ADR-002).
 
 - Agent layer, in this repo:
+  - `setup` owns guided first use, durable private tool preferences, and separate confirmed product briefs (ADR-006). It never connects providers or spends as an installation side effect.
   - `winning-ad-remake-workflow` is the central business Skill. It orchestrates research, analysis, cost approval, generation, QC, delivery, and the Meta campaign step.
   - `meta-ads-usage` covers Meta's ads MCP server and Ads CLI, and holds the Meta rules (paused by default, read-back, separate approval for activation, scheduling, and spend). Write a Meta campaign rule here and nowhere else. Meta publishes no official Skill.
   - `provider-policy` holds the rules shared by every provider call (auth check, approval before spend, no silent retry or batch expansion, download outputs, free path when nothing is connected). Write a shared provider rule here and nowhere else.

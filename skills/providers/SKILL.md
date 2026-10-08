@@ -11,6 +11,7 @@ Before handling the task, read [the agent rules](references/agent-rules.md), gen
 
 In Codex, explicit Skill invocation applies these operating instructions to the task; it does not create an isolated profile or globally inject a persona. The Codex package bundles no MCP servers. Hermes `config.yaml` flags apply only in Hermes; check the actual session tools in every runtime.
 
+Before a relevant advertising task, read the sibling `setup` Skill and its rule reference, then load private settings. Incomplete setup offers guided choices before research; a confirmed free choice is complete and needs no login. Completed choices are reused without another questionnaire. Follow setup precedence and recovery without silently switching the saved route. Setup itself does not spend or write to provider accounts. Documentation-only pin/source lookups and ordinary coding tasks do not trigger the questionnaire.
 
 This is a routing directory, not usage documentation. How to use a vendor comes from its official Skill or documentation, listed below. The shared rules for every provider call are in `provider-policy`, and they win over any vendor Skill.
 

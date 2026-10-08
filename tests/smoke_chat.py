@@ -2,6 +2,8 @@
 """Run Hermes with test-only substitutes before any mutating tool executes."""
 
 import json
+import os
+from setup_guard import helper_command, permitted_read
 import sys
 import threading
 from pathlib import Path
@@ -11,16 +13,23 @@ READ_ONLY_TOOLS = frozenset({"skills_list", "skill_view", "clarify"})
 
 
 class SmokeGuard:
-    def __init__(self, log_path):
+    def __init__(self, log_path, setup_config=None):
         self.log_path = Path(log_path)
         self.lock = threading.Lock()
+        self.setup_config = setup_config
 
     def dispatch(self, name, arguments, execute):
         allowed = name in READ_ONLY_TOOLS
+        setup = []
+        reads = []
+        if self.setup_config and name == 'terminal':
+            setup = helper_command(arguments.get('command'), self.setup_config['setup'])
+            reads = permitted_read({'tool_name': 'Bash', 'tool_input': arguments}, self.setup_config)
+            allowed = bool(setup or reads)
         # A failed write raises before dispatch. Unlike a fail-open observer hook,
         # this wrapper cannot accidentally execute a tool when recording fails.
         with self.lock, self.log_path.open("a", encoding="utf-8") as log:
-            log.write(json.dumps({"name": name, "arguments": arguments, "stubbed": not allowed}) + "\n")
+            log.write(json.dumps({"name": name, "arguments": arguments, "stubbed": not allowed, "setup": setup, "reads": reads}) + "\n")
         if allowed:
             return execute(arguments)
         return json.dumps({"error": "Smoke test substitute: this tool was not executed. No vendor CLI or account is connected in this test. Read the Skills and explain the next steps; do not retry the tool."})
@@ -56,7 +65,9 @@ def main():
     from agent import tool_executor
     from tools.registry import registry
 
-    guard = SmokeGuard(Path(log_directory) / "guard.jsonl")
+    config_path = os.environ.get("AR_SETUP_GUARD_CONFIG")
+    config = json.loads(Path(config_path).read_text()) if config_path else None
+    guard = SmokeGuard(Path(log_directory) / "guard.jsonl", config)
     install_guard(tool_executor, registry, guard)
     print("SMOKE_GUARD_READY", flush=True)
     hermes_main()

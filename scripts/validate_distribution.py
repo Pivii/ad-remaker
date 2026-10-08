@@ -19,6 +19,17 @@ except ImportError:  # PyYAML is optional.
 ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_FILES = (
+    "docs/decisions/ADR-006-guided-setup-state.md",
+    "docs/setup.md",
+    "skills/setup/SKILL.md",
+    "skills/setup/scripts/setup_state.py",
+    "skills/setup/references/state.md",
+    "skills/setup/references/connections.md",
+    "skills/setup/references/service-readiness.md",
+    "tests/check_setup.py",
+    "tests/check_setup_chat.py",
+    "tests/check_setup_hermes.py",
+    "tests/setup_guard.py",
     ".codex-plugin/plugin.json",
     "docs/decisions/ADR-005-codex-skills-only.md",
     "scripts/export_codex_package.py",
@@ -505,6 +516,9 @@ def parse_skill_frontmatter(path: Path, errors: list[str]) -> dict[str, Any] | N
 
 
 def validate_skills(errors: list[str]) -> None:
+    readiness = ROOT / "skills/setup/references/service-readiness.md"
+    if readiness.is_file() and readiness.read_bytes() != (ROOT / "docs/service-matrix.md").read_bytes():
+        fail(errors, "setup service readiness differs from service-matrix.md; run python3 scripts/sync_skill_rules.py")
     skills_dir = ROOT / "skills"
     if not skills_dir.is_dir():
         fail(errors, "missing required directory: skills")
@@ -729,6 +743,9 @@ def validate_forbidden_files(errors: list[str]) -> None:
     for path in ROOT.rglob("*"):
         relative = path.relative_to(ROOT)
         if any(part in IGNORED_DIRS for part in relative.parts):
+            continue
+        if "ad-remaker-state" in relative.parts or path.name == "setup.json":
+            fail(errors, f"forbidden setup runtime-state path: {relative.as_posix()}")
             continue
         if relative.parts and relative.parts[0] in FORBIDDEN_ROOT_DIRS:
             fail(errors, f"forbidden runtime-state path: {relative.as_posix()}")

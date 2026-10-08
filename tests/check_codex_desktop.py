@@ -72,7 +72,7 @@ def check(app: Path, chat: bool, keep: bool) -> None:
                     if source.is_file() and '__pycache__' not in source.parts:
                         target = installed_entry.parent / source.relative_to(ROOT / 'skills' / name)
                         assert target.read_bytes() == source.read_bytes(), f'Missing/changed Desktop support file: {source.name}'
-            print('PASS Desktop runtime five Skills discovered; all support/rule files byte-identical')
+            print('PASS Desktop runtime six Skills discovered; all support/rule files byte-identical')
             server.call('thread/start', {'cwd': str(work), 'ephemeral': True, 'model': 'gpt-6.1-sol'})
             status = server.call('mcpServerStatus/list', {})
             assert status['data'] == [] and status.get('nextCursor') is None, status
