@@ -103,14 +103,19 @@ fi
 command -v hermes >/dev/null 2>&1 || { echo "error: hermes is not on PATH" >&2; exit 1; }
 
 # hermes v0.20.2 can report an install failure without a non-zero exit status,
-# so each install is confirmed against `hermes skills list` as well.
+# so each install is confirmed against `hermes skills list` as well. The list is
+# captured and searched without a pipe: piping into `grep -q` lets grep exit early,
+# the writer then gets SIGPIPE, and pipefail turns a found Skill into a failure.
 failed=0
 for i in "${!urls[@]}"; do
   echo "Installing ${names[$i]} from ${urls[$i]}"
   if ! hermes -p "$PROFILE" skills install "${urls[$i]}" --yes; then
     echo "error: hermes skills install failed for ${names[$i]}" >&2
     failed=1
-  elif ! hermes -p "$PROFILE" skills list | grep -qw -- "${names[$i]}"; then
+  elif ! listed="$(hermes -p "$PROFILE" skills list)"; then
+    echo "error: hermes skills list failed after installing ${names[$i]}" >&2
+    failed=1
+  elif ! grep -qw -- "${names[$i]}" <<<"$listed"; then
     echo "error: ${names[$i]} is not listed after install; check the output above" >&2
     failed=1
   fi
