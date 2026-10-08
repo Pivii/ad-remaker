@@ -21,7 +21,7 @@ EXIT_MISSING_DEPENDENCY = 3
 INSTALL_HINTS = {
     "ffmpeg": "Install ffmpeg (https://ffmpeg.org/download.html), for example `brew install ffmpeg` or `apt install ffmpeg`.",
     "ffprobe": "ffprobe ships with ffmpeg. Install ffmpeg (https://ffmpeg.org/download.html).",
-    "scenedetect": "Install PySceneDetect (https://www.scenedetect.com), for example `pipx install 'scenedetect[opencv-headless]'`.",
+    "scenedetect": "Install PySceneDetect (https://www.scenedetect.com), for example `pipx install scenedetect`.",
 }
 
 CUT_LIST_FIELDS = (
