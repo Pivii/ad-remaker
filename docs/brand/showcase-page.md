@@ -46,7 +46,7 @@ Content width 1200 px max, 24 px side gutter. Every row wraps to one column on a
 2. **Stack legend, paper.** Four columns, one per card color: Research (purple), Generation (orange), Runtime (lime), The finished ad (accent). A 20 px swatch plus a title and the description from the copy table.
 3. **How it works, `#how`.** H2 "From an ad reference to your own, in six steps." Six cards (min 300 px), with titles and descriptions from the copy table. Step 04 is the only ink card, with the chip "04 · YOU APPROVE".
 4. **Guardrails, `#rules`, ink background.** H2 "It works for you. It never spends for you." Four cards with a lime stroke icon, titled "Never an exact copy", "No invented claims", "Approval before any spend", and "Nothing goes live alone", with descriptions from the copy table. Display the scope note directly below the heading: these rules apply to Ad Remaker's Hermes profile and Claude Code plugin.
-5. **Choose a version, `#install`.** H2 "Quelle version choisir ?". Render the comparison below with three option columns and one row-label column. Preserve the option order: hosted service, Claude Code plugin, Hermes profile. On phones, allow horizontal table scrolling with visible row labels, or render equivalent labeled cards. Place the hosted-service link and its affiliate disclosure inside this comparison. Follow it with two local installation cards (min 320 px):
+5. **Choose a version, `#install`.** H2 "Which version should you choose?". Render the comparison below with three option columns and one row-label column. Preserve the option order: hosted service, Claude Code plugin, Hermes profile. On phones, allow horizontal table scrolling with visible row labels, or render equivalent labeled cards. Place the hosted-service link and its affiliate disclosure inside this comparison. Follow it with two local installation cards (min 320 px):
    - **Claude Code plugin**, chip "Public access pending", body from the copy table, code block with the two commands in the installation section below.
    - **Hermes profile**, chip "Public access pending", body from the copy table, code block `hermes profile install /path/to/ad-remaker --yes`.
 6. **Footer.** Wordmark and the line "Analyze the mechanics. Rebuild for your product. You approve every spend."
@@ -105,25 +105,25 @@ These commands follow the current [README](../../README.md). Public availability
 
 Render the following attribution literally below the hero title:
 
-Inspiré de l'agent Recreate competitor ads de [Rerun](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4). Si tu veux le même agent sans rien installer ni configurer, utilise directement Rerun.
+Inspired by the Recreate competitor ads agent from [Rerun](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4). If you want the same agent without installing or configuring anything, use Rerun directly.
 
-Adaptation indépendante, non officielle. Selon le mainteneur, l'équipe marketing (Théo) a autorisé la publication open source le 8 octobre 2026, sous réserve d'attribution. Liens affiliés : le mainteneur peut percevoir une commission.
+This is an independent, unofficial adaptation. According to the maintainer, the marketing team (Théo) authorized an open-source release on October 8, 2026, provided attribution is included. These are affiliate links: the maintainer may earn a commission.
 
 Render the same comparison as the README, including its dated source links and prerequisite note:
 
-### Quelle version choisir ?
+### Which version should you choose?
 
-Pour démarrer sans terminal, Rerun est l'option simple. Le plugin et le profil permettent d'utiliser ton environnement existant.
+Rerun is the simple option if you want to get started without a terminal. The plugin and profile let you use your existing environment.
 
-| Critère | [Rerun](https://rerun.build?via=aRLmG4) | Plugin Claude Code | Profil Hermes |
+| Criterion | [Rerun](https://rerun.build?via=aRLmG4) | Claude Code plugin | Hermes profile |
 |---|---|---|---|
-| Public visé | Non-techniques qui veulent un agent prêt à utiliser | Utilisateurs qui utilisent déjà Claude Code | Utilisateurs qui font tourner Hermes |
-| Temps d'installation | Quelques secondes pour ajouter l'agent ; environ 5 min pour la configuration, selon la page du template | Quelques minutes si Claude Code est déjà configuré, puis connexion des services utilisés (estimation) | Quelques minutes si Hermes est déjà configuré, puis choix du modèle et connexion des services utilisés (estimation) |
-| Hébergement | Hébergé, géré par le service | Sur la machine où tu exécutes Claude Code | Sur la machine ou le serveur où tu exécutes Hermes |
-| Coût | Essai gratuit pour démarrer, puis abonnement payant ; coûts des modèles et services selon l'usage | Plugin gratuit (MIT) ; accès Claude Code, modèles et services externes selon tes offres | Profil gratuit (MIT) ; modèles, hébergement éventuel et services externes selon tes offres |
-| Outils externes nécessaires | Higgsfield ou Kie AI (ou un autre générateur) pour la génération ; TrendTrack facultatif pour la recherche ; Meta Ads facultatif pour les brouillons | TrendTrack facultatif ; Higgsfield ou Kie AI (ou un autre générateur connecté) pour la génération ; Meta Ads facultatif ; mode d'analyse local sans générateur | TrendTrack facultatif ; Higgsfield ou Kie AI (ou un autre générateur connecté) pour la génération ; Meta Ads facultatif ; mode d'analyse local sans générateur |
+| Intended users | Non-technical users who want a ready-to-use agent | People who already use Claude Code | People who run Hermes |
+| Setup time | A few seconds to add the agent; about 5 min for configuration, according to the template page | A few minutes if Claude Code is already configured, plus connections to the services you use (estimate) | A few minutes if Hermes is already configured, plus model selection and connections to the services you use (estimate) |
+| Hosting | Hosted and managed by the service | On the machine where you run Claude Code | On the machine or server where you run Hermes |
+| Cost | Free trial to get started, then a paid subscription; model and service costs depend on usage | Free plugin (MIT); Claude Code access, models, and external services depend on your plans | Free profile (MIT); models, optional hosting, and external services depend on your plans |
+| External tools needed | Higgsfield or Kie AI (or another generator) for generation; TrendTrack is optional for research; Meta Ads is optional for drafts | TrendTrack is optional; Higgsfield or Kie AI (or another connected generator) for generation; Meta Ads is optional; local analysis mode works without a generator | TrendTrack is optional; Higgsfield or Kie AI (or another connected generator) for generation; Meta Ads is optional; local analysis mode works without a generator |
 
-Informations vérifiées le 8 octobre 2026 : [template](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4) et [offre du service](https://rerun.build/pricing?via=aRLmG4). L'essai gratuit nécessite une carte bancaire. L'ajout du template ne connecte pas tes comptes externes. Sans TrendTrack, la recherche peut utiliser les bibliothèques publiques ; sans Meta Ads, la livraison se fait sous forme de fichiers à importer. Les offres et prérequis peuvent évoluer.
+Information checked on October 8, 2026: [template](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4) and [service plans](https://rerun.build/pricing?via=aRLmG4). The free trial requires a payment card. Adding the template does not connect your external accounts. Research can use public ad libraries when TrendTrack is unavailable; delivery provides files for manual import when Meta Ads is unavailable. Plans and requirements may change.
 
 Use only this project's locally authored logo and visuals. Do not reuse the credited service's logo, screenshots, agent-board images, or other visuals. Do not describe this distribution as an official product. Keep the credited service's name inside the attribution and comparison only. Every link to that service must include `?via=aRLmG4`.
 
