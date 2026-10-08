@@ -26,13 +26,30 @@ The profile isolates Ad Remaker's configuration, Skills, connections, memory, se
 
 ### Skills
 
-Skills define workflows. The central business Skill must orchestrate research, analysis, adaptation, approvals, production, quality control, and delivery. Service Skills explain the safe use of a specific integration.
+Skills define workflows, in two layers (ADR-002).
 
-A missing Skill must never be simulated. Source files supplied later must retain their provenance, be audited, and be adapted only when necessary.
+- Agent layer, distributed: the central business Skill orchestrates research, analysis, adaptation, approvals, production, quality control, and delivery. `provider-policy` holds the rules shared by every provider call, and `providers` routes each vendor to its official source.
+- Vendor layer, installed per user: official vendor Skills, installed by reference at a pinned commit with `scripts/install_provider_skills.sh` and re-scanned with `hermes skills audit`. They are not copied into the distribution, and `provider-policy` takes precedence over them. A vendor whose Skill the Hermes skills guard blocks stays a thin entry in `providers`: the agent reads the pinned Skill as documentation, and the user installs the vendor CLI with approval.
+
+A missing Skill must never be simulated. Source texts keep their provenance: the workflow's in `references/upstream.md`, the vendors' in `docs/provenance/`.
 
 ### MCP
 
-`mcp.json` remains empty until a connection has been supplied and verified. Secrets are never versioned. An installed Skill does not prove that an MCP is authenticated or operational.
+Hermes reads MCP servers from the profile `config.yaml`, under `mcp_servers`. It does not read a root `mcp.json` in a profile, so the distribution does not ship one.
+
+`config.yaml` declares one entry per vendor with a public official endpoint, each with `enabled: false`. Each user enables only the vendors they pay for. The sources and check dates are in `docs/service-matrix.md`.
+
+Secrets are never versioned. Servers authenticate with OAuth, or with `${ENV_VAR}` placeholders that Hermes resolves from the installed profile's own `.env`. Every placeholder is declared in `distribution.yaml` `env_requires` with `required: false`. Hermes turns that list into a `.env.EXAMPLE` on install.
+
+To enable a server in an installed profile:
+
+1. In the installed profile's `config.yaml`, set `enabled: true` on that server.
+2. If the server uses a placeholder, set the variable in the profile's `.env`. For example, `meta_ads` needs `META_APP_ID`: the ID of your own Meta app.
+3. Run `hermes -p ad-remaker mcp login <name>` to complete OAuth, then `hermes -p ad-remaker mcp test <name>`.
+
+`hermes profile update` preserves the installed `config.yaml` unless `--force-config` is passed. Servers declared in a later release therefore do not reach existing installs automatically. `--force-config` replaces the whole file, including any server the user enabled, so it resets those servers to disabled. To pick up a new server without that reset, copy its entry from this repository's `config.yaml` into the installed one.
+
+An installed Skill does not prove that an MCP is authenticated or operational. A declared server is `configured` at most until it passes the update rule in `docs/service-matrix.md`.
 
 ### Scripts
 
@@ -60,4 +77,4 @@ The distribution currently provides no scheduled jobs. Any future routine must b
 
 ## File ownership
 
-The distribution owns `SOUL.md`, `config.yaml`, `mcp.json`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.
+The distribution owns `SOUL.md`, `config.yaml`, `skills/`, `cron/jobs.json`, and `distribution.yaml`. `config.yaml` is copied on install but preserved on `hermes profile update` unless `--force-config` is passed. Secrets, memories, sessions, local assets, brand data, and work outputs remain specific to each installation.

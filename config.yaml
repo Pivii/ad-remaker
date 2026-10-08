@@ -6,3 +6,33 @@ approvals:
 
 security:
   redact_secrets: true
+
+# Official vendor MCP servers, declared but disabled. Enable only the vendors
+# you pay for (set `enabled: true`), then authenticate with
+# `hermes -p ad-remaker mcp login <name>`. Never write a secret here: use
+# OAuth, or `${ENV_VAR}` placeholders resolved from the profile's own `.env`.
+# Endpoints and sources are recorded in docs/service-matrix.md.
+mcp_servers:
+  trendtrack:
+    url: "https://api.trendtrack.io/v1/mcp"
+    auth: oauth
+    enabled: false
+  higgsfield:
+    url: "https://mcp.higgsfield.ai/mcp"
+    auth: oauth
+    enabled: false
+  pika:
+    url: "https://mcp.pika.me/api/mcp"
+    auth: oauth
+    enabled: false
+  fal:
+    url: "https://mcp.fal.ai/mcp-relay"
+    auth: oauth
+    enabled: false
+  meta_ads:
+    url: "https://mcp.facebook.com/ads"
+    auth: oauth
+    oauth:
+      # Meta requires a pre-registered OAuth client: your own Meta app ID.
+      client_id: "${META_APP_ID}"
+    enabled: false

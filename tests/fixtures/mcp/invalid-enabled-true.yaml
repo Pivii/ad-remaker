@@ -1,0 +1,15 @@
+# expect: 'enabled' must be false
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  example:
+    url: "https://mcp.example.com/mcp"
+    auth: oauth
+    enabled: true

@@ -1,0 +1,17 @@
+# expect: pass
+agent:
+  tool_use_enforcement: auto
+
+approvals:
+  mode: manual
+
+security:
+  redact_secrets: true
+
+mcp_servers:
+  oauth_server:
+    url: "https://mcp.example.com/mcp"
+    auth: oauth
+    oauth:
+      client_id: "${META_APP_ID}"
+    enabled: false

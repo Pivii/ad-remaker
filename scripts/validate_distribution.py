@@ -3,11 +3,13 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlsplit
 
 try:
     import yaml  # type: ignore
@@ -27,9 +29,17 @@ REQUIRED_FILES = (
     "docs/ad-remaker-complete-operating-report.md",
     "docs/architecture.md",
     "docs/decisions/ADR-001-profile-distribution.md",
+    "docs/decisions/ADR-002-provider-skill-layers.md",
     "docs/decisions/README.md",
+    "docs/provenance/README.md",
+    "docs/provenance/brandsearch.md",
+    "docs/provenance/fal.md",
+    "docs/provenance/higgsfield.md",
+    "docs/provenance/kie-ai.md",
+    "docs/provenance/pika.md",
+    "docs/provenance/trendtrack.md",
     "docs/service-matrix.md",
-    "mcp.json",
+    "scripts/install_provider_skills.sh",
     "scripts/validate_distribution.py",
     "skills/README.md",
     "skills/free-fallback-mode/SKILL.md",
@@ -38,11 +48,31 @@ REQUIRED_FILES = (
     "skills/free-fallback-mode/scripts/first_three_seconds_sheet.py",
     "skills/free-fallback-mode/scripts/frame_sheet.py",
     "skills/free-fallback-mode/scripts/shot_clips.py",
+    "skills/provider-policy/SKILL.md",
+    "skills/providers/SKILL.md",
     "tests/README.md",
+    "tests/check_mcp_fixtures.py",
     "tests/fixtures/README.md",
 )
 
 FORBIDDEN_REPORT = "docs/ad-remaker-fonctionnement-complet.md"
+
+# Removed by ADR-002; their source texts live in docs/provenance/.
+REMOVED_SKILLS = (
+    "brandsearch-usage",
+    "fal-usage",
+    "higgsfield-usage",
+    "kie-ai-usage",
+    "pika-usage",
+    "trendtrack-usage",
+)
+
+PROVIDER_PINS_FILE = "skills/providers/SKILL.md"
+PROVIDER_PINS_BEGIN = "<!-- provider-pins:begin -->"
+PROVIDER_PINS_END = "<!-- provider-pins:end -->"
+PROVIDER_PINS_HEADER = ["Vendor", "Repository", "Skill path", "Pinned ref", "Install", "License", "Checked"]
+PROVIDER_INSTALL_VALUES = {"hermes", "no"}
+PROVIDER_VENDORS = {"brandsearch", "fal", "higgsfield", "kie-ai", "meta-ads", "pika", "trendtrack"}
 FORBIDDEN_FILE_NAMES = {
     ".env",
     "auth.json",
@@ -81,6 +111,26 @@ FORBIDDEN_ROOT_DIRS = {
 }
 IGNORED_DIRS = {".git", ".pytest_cache", "__pycache__"}
 
+# Hermes reads MCP servers from config.yaml `mcp_servers`. Values under these
+# keys must be `${ENV_VAR}` placeholders (optionally prefixed by "Bearer ").
+SENSITIVE_KEY = re.compile(r"(authorization|token|secret|password|passwd|cookie|api[_-]?key|apikey)", re.IGNORECASE)
+PLACEHOLDER = re.compile(r"\$\{([^}]+)\}")
+# Name segments that make a URL query parameter or command-line flag carry a
+# secret (`?api_key=`, `--auth`, `--key=`), unless the name ends in a segment
+# that describes the secret instead of holding it (`--auth-type`, `--token-file`).
+SECRET_NAME_SEGMENTS = {"auth", "key"}
+NON_SECRET_NAME_SUFFIXES = {"env", "file", "header", "method", "mode", "name", "path", "type", "url", "var"}
+# Hermes resolves these Cursor-style context variables itself; they are not env vars.
+CONTEXT_PLACEHOLDERS = {"userHome", "workspaceFolder", "workspaceFolderBasename", "pathSeparator", "/"}
+TOKEN_SHAPE = re.compile(
+    r"(\bBearer\s+(?!\$\{)\S+"
+    r"|\b(?:sk|pk|rk)[-_][A-Za-z0-9_-]{8,}"
+    r"|\bdk_[A-Za-z0-9_-]{8,}"
+    r"|\bgh[pousr]_[A-Za-z0-9]{20,}"
+    r"|\bEAA[A-Za-z0-9]{20,}"
+    r"|\bAKIA[0-9A-Z]{16})"
+)
+
 
 def fail(errors: list[str], message: str) -> None:
     errors.append(message)
@@ -95,32 +145,101 @@ def load_json(relative_path: str, errors: list[str]) -> Any:
         return None
 
 
+def fallback_scalar(raw_value: str) -> Any:
+    value = raw_value.strip()
+    if value[:1] in {"'", '"'}:
+        quote = value[0]
+        closing = value.find(quote, 1)
+        return value[1:closing] if closing > 0 else value[1:]
+    value = re.sub(r"\s+#.*$", "", value)
+    if value == "[]":
+        return []
+    if value == "{}":
+        return {}
+    if value.lower() in {"true", "false"}:
+        return value.lower() == "true"
+    if value.lower() in {"", "~", "null"}:
+        return None
+    if re.fullmatch(r"-?[0-9]+", value):
+        return int(value)
+    return value
+
+
 def fallback_yaml_mapping(text: str, relative_path: str, errors: list[str]) -> dict[str, Any] | None:
-    """Parse the top-level mapping needed for dependency-free shape checks."""
-    result: dict[str, Any] = {}
+    """Parse the block-style YAML subset used by this distribution, without PyYAML.
+
+    Supports nested mappings, lists of scalars or mappings, quoted and plain
+    scalars, and comments. Flow collections other than `[]` and `{}` are not
+    supported.
+    """
+    lines: list[tuple[int, str, int]] = []
     for line_number, raw_line in enumerate(text.splitlines(), start=1):
         if not raw_line.strip() or raw_line.lstrip().startswith("#"):
             continue
-        if raw_line[0].isspace():
-            continue
-        match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s*(.*))?$", raw_line)
-        if not match:
-            fail(errors, f"{relative_path}:{line_number}: unsupported or invalid top-level YAML")
-            return None
-        key, raw_value = match.groups()
-        raw_value = (raw_value or "").strip()
-        if not raw_value:
-            value: Any = {}
-        elif raw_value == "[]":
-            value = []
-        elif raw_value == "{}":
-            value = {}
-        elif raw_value.lower() in {"true", "false"}:
-            value = raw_value.lower() == "true"
-        else:
-            value = raw_value.strip("\"'")
-        result[key] = value
-    return result
+        lines.append((len(raw_line) - len(raw_line.lstrip(" ")), raw_line.strip(), line_number))
+
+    class ParseError(Exception):
+        pass
+
+    def parse_block(index: int, indent: int) -> tuple[Any, int]:
+        if lines[index][1].startswith("-"):
+            return parse_list(index, indent)
+        return parse_mapping(index, indent)
+
+    def parse_nested(index: int, indent: int) -> tuple[Any, int]:
+        """Parse the value of a key whose scalar part is empty."""
+        if index < len(lines):
+            next_indent, next_content, _ = lines[index]
+            if next_indent > indent or (next_indent == indent and next_content.startswith("- ")):
+                return parse_block(index, next_indent)
+        return None, index
+
+    def parse_mapping(index: int, indent: int) -> tuple[dict[str, Any], int]:
+        result: dict[str, Any] = {}
+        while index < len(lines) and lines[index][0] == indent and not lines[index][1].startswith("- "):
+            _, content, line_number = lines[index]
+            match = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?:\s+(.*))?$", content)
+            if not match:
+                raise ParseError(f"{relative_path}:{line_number}: unsupported or invalid YAML")
+            key, raw_value = match.groups()
+            if raw_value and not raw_value.lstrip().startswith("#"):
+                result[key] = fallback_scalar(raw_value)
+                index += 1
+            else:
+                result[key], index = parse_nested(index + 1, indent)
+        if index < len(lines) and lines[index][0] > indent:
+            raise ParseError(f"{relative_path}:{lines[index][2]}: unexpected indentation")
+        return result, index
+
+    def parse_list(index: int, indent: int) -> tuple[list[Any], int]:
+        result: list[Any] = []
+        while index < len(lines) and lines[index][0] == indent and lines[index][1].startswith("-"):
+            _, content, line_number = lines[index]
+            item = content[1:].lstrip()
+            if not item:
+                value, index = parse_nested(index + 1, indent)
+                result.append(value)
+            elif re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:(\s|$)", item):
+                # A mapping that starts on the dash line: re-anchor it at the key column.
+                item_indent = indent + len(content) - len(item)
+                lines[index] = (item_indent, item, line_number)
+                value, index = parse_mapping(index, item_indent)
+                result.append(value)
+            else:
+                result.append(fallback_scalar(item))
+                index += 1
+        return result, index
+
+    if not lines:
+        return {}
+    try:
+        data, index = parse_block(0, lines[0][0])
+        if index < len(lines):
+            raise ParseError(f"{relative_path}:{lines[index][2]}: unsupported or invalid YAML")
+    except ParseError as exc:
+        fail(errors, str(exc))
+        return None
+    return data
 
 
 def load_yaml_mapping(relative_path: str, errors: list[str]) -> dict[str, Any] | None:
@@ -158,7 +277,114 @@ def validate_required_files(errors: list[str]) -> None:
         fail(errors, f"obsolete French-facing report path must not exist: {FORBIDDEN_REPORT}")
 
 
-def validate_yaml_files(errors: list[str]) -> None:
+def walk_strings(value: Any, path: tuple[str, ...] = ()):
+    if isinstance(value, str):
+        yield path, value
+    elif isinstance(value, dict):
+        for key, child in value.items():
+            yield from walk_strings(child, path + (str(key),))
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from walk_strings(child, path + (str(index),))
+
+
+def is_secret_name(name: str) -> bool:
+    segments = [segment for segment in re.split(r"[-_.]", name.lower().lstrip("-")) if segment]
+    if not segments or segments[-1] in NON_SECRET_NAME_SUFFIXES:
+        return False
+    return bool(SENSITIVE_KEY.search(name)) or any(segment in SECRET_NAME_SEGMENTS for segment in segments)
+
+
+def is_literal(value: str) -> bool:
+    """True when the value holds anything besides `${VAR}` placeholders."""
+    return bool(PLACEHOLDER.sub("", value).strip())
+
+
+def url_secret_issues(value: str) -> list[str]:
+    """Literal credentials carried by a URL: userinfo password or secret-named query parameters."""
+    if not re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", value):
+        return []
+    try:
+        parts = urlsplit(value)
+        password = parts.password
+    except ValueError:
+        return []
+    issues = []
+    if password and is_literal(password):
+        issues.append("URL userinfo carries a literal password")
+    for key, query_value in parse_qsl(parts.query, keep_blank_values=True):
+        if is_secret_name(key) and is_literal(query_value):
+            issues.append(f"URL query parameter {key!r} carries a literal secret")
+    return issues
+
+
+def args_secret_issues(args: list[Any]) -> list[str]:
+    """Literal values passed to secret-named flags: `--api-key VALUE` or `--api-key=VALUE`."""
+    issues = []
+    for index, item in enumerate(args):
+        if not isinstance(item, str) or not item.startswith("-"):
+            continue
+        flag, separator, inline_value = item.partition("=")
+        if not is_secret_name(flag):
+            continue
+        if separator:
+            value = inline_value
+        elif index + 1 < len(args) and isinstance(args[index + 1], str) and not args[index + 1].startswith("-"):
+            value = args[index + 1]
+        else:
+            continue
+        if is_literal(value):
+            issues.append(f"args flag {flag!r} carries a literal secret")
+    return issues
+
+
+def validate_mcp_servers(config: dict[str, Any], env_names: set[str], label: str, errors: list[str]) -> None:
+    """Every declared server must ship disabled, secret-free, and with declared env vars."""
+    servers = config.get("mcp_servers")
+    if servers is None:
+        return
+    if not isinstance(servers, dict):
+        fail(errors, f"{label}: 'mcp_servers' must be a mapping")
+        return
+
+    for name, server in servers.items():
+        prefix = f"{label}: mcp_servers.{name}"
+        if not isinstance(server, dict):
+            fail(errors, f"{prefix}: must be a mapping")
+            continue
+        url = server.get("url")
+        if "command" not in server and not (isinstance(url, str) and url.startswith("https://")):
+            fail(errors, f"{prefix}: 'url' must be an https:// URL")
+        # Hermes treats a missing or unrecognized value as enabled.
+        if server.get("enabled") is not False:
+            fail(errors, f"{prefix}: 'enabled' must be false; users enable servers in their installed profile")
+
+        args = server.get("args")
+        if isinstance(args, list):
+            for issue in args_secret_issues(args):
+                fail(errors, f"{prefix}.args: {issue}; use an ${{ENV_VAR}} placeholder or OAuth")
+
+        for path, value in walk_strings(server):
+            dotted = ".".join(path)
+            for issue in url_secret_issues(value):
+                fail(errors, f"{prefix}.{dotted}: {issue}; use an ${{ENV_VAR}} placeholder or OAuth")
+            if any(SENSITIVE_KEY.search(part) for part in path):
+                literal = PLACEHOLDER.sub("", value).strip()
+                if literal and literal.lower() != "bearer":
+                    fail(errors, f"{prefix}.{dotted}: literal secret; use an ${{ENV_VAR}} placeholder or OAuth")
+                    continue
+            if TOKEN_SHAPE.search(value):
+                fail(errors, f"{prefix}.{dotted}: value looks like a hardcoded token")
+            for reference in PLACEHOLDER.findall(value):
+                reference = reference.strip()
+                if reference.startswith("env:"):
+                    reference = reference[len("env:"):].strip()
+                if reference not in CONTEXT_PLACEHOLDERS and reference not in env_names:
+                    fail(errors, f"{prefix}.{dotted}: ${{{reference}}} is not declared in distribution.yaml env_requires")
+
+
+def validate_yaml_files(errors: list[str], config_path: str = "config.yaml") -> None:
+    env_names: set[str] = set()
     manifest = load_yaml_mapping("distribution.yaml", errors)
     if manifest is not None:
         required = {
@@ -177,24 +403,25 @@ def validate_yaml_files(errors: list[str]) -> None:
                 fail(errors, f"distribution.yaml: {key!r} must be {expected_type.__name__}")
         if manifest.get("name") != "ad-remaker":
             fail(errors, "distribution.yaml: 'name' must be 'ad-remaker'")
+        for entry in manifest.get("env_requires") or []:
+            if not isinstance(entry, dict) or not isinstance(entry.get("name"), str) or not entry["name"].strip():
+                fail(errors, "distribution.yaml: each env_requires entry must be a mapping with a 'name'")
+                continue
+            env_names.add(entry["name"].strip())
+            if entry.get("required") is not False:
+                fail(errors, f"distribution.yaml: env_requires {entry['name']!r} must set 'required: false'")
 
-    config = load_yaml_mapping("config.yaml", errors)
+    config = load_yaml_mapping(config_path, errors)
     if config is not None:
         for key in ("agent", "approvals", "security"):
             if key not in config:
-                fail(errors, f"config.yaml: missing required top-level mapping {key!r}")
+                fail(errors, f"{config_path}: missing required top-level mapping {key!r}")
             elif not isinstance(config[key], dict):
-                fail(errors, f"config.yaml: {key!r} must be a mapping")
+                fail(errors, f"{config_path}: {key!r} must be a mapping")
+        validate_mcp_servers(config, env_names, config_path, errors)
 
 
 def validate_json_files(errors: list[str]) -> None:
-    mcp = load_json("mcp.json", errors)
-    if mcp is not None:
-        if not isinstance(mcp, dict):
-            fail(errors, "mcp.json: top-level value must be an object")
-        elif not isinstance(mcp.get("servers"), dict):
-            fail(errors, "mcp.json: 'servers' must be an object")
-
     jobs = load_json("cron/jobs.json", errors)
     if jobs is not None:
         if not isinstance(jobs, dict):
@@ -268,6 +495,64 @@ def validate_skills(errors: list[str]) -> None:
         if metadata.get("name") != skill_dir.name:
             fail(errors, f"{relative_skill}: frontmatter name must match directory name {skill_dir.name!r}")
 
+    for name in REMOVED_SKILLS:
+        if (skills_dir / name).exists():
+            fail(errors, f"skills/{name}: removed by ADR-002; use provider-policy and providers instead")
+
+
+def validate_provider_pins(errors: list[str]) -> None:
+    """Check the pin table that scripts/install_provider_skills.sh reads."""
+    path = ROOT / PROVIDER_PINS_FILE
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        fail(errors, f"{PROVIDER_PINS_FILE}: cannot read pin table: {exc}")
+        return
+    if text.count(PROVIDER_PINS_BEGIN) != 1 or text.count(PROVIDER_PINS_END) != 1:
+        fail(errors, f"{PROVIDER_PINS_FILE}: pin table markers must appear exactly once")
+        return
+    block = text.split(PROVIDER_PINS_BEGIN, 1)[1].split(PROVIDER_PINS_END, 1)[0]
+    table = [line.strip() for line in block.splitlines() if line.strip().startswith("|")]
+    if len(table) < 2 or [cell.strip() for cell in table[0].strip("|").split("|")] != PROVIDER_PINS_HEADER:
+        fail(errors, f"{PROVIDER_PINS_FILE}: pin table header must be {' | '.join(PROVIDER_PINS_HEADER)}")
+        return
+
+    seen: set[str] = set()
+    for line in table[2:]:
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) != len(PROVIDER_PINS_HEADER):
+            fail(errors, f"{PROVIDER_PINS_FILE}: pin row must have {len(PROVIDER_PINS_HEADER)} cells: {line}")
+            continue
+        vendor, repository, skill_path, ref, install, license_note, checked = cells
+        where = f"{PROVIDER_PINS_FILE}: vendor {vendor!r}"
+        if vendor in seen:
+            fail(errors, f"{where}: duplicate row")
+        seen.add(vendor)
+        if not re.fullmatch(r"[a-z][a-z0-9-]*", vendor):
+            fail(errors, f"{where}: vendor key must be lowercase letters, digits, and hyphens")
+        if ref == "none":
+            if repository != "none" or skill_path != "none":
+                fail(errors, f"{where}: a row without a pin must use 'none' for repository and Skill path")
+        elif re.fullmatch(r"[0-9a-f]{40}", ref):
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
+                fail(errors, f"{where}: repository must be owner/name")
+            if not re.fullmatch(r"[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*", skill_path) or ".." in skill_path:
+                fail(errors, f"{where}: Skill path must be a relative path inside the repository")
+        else:
+            fail(errors, f"{where}: pinned ref must be a full 40-character commit SHA or 'none'")
+        if install not in PROVIDER_INSTALL_VALUES:
+            fail(errors, f"{where}: Install must be one of {', '.join(sorted(PROVIDER_INSTALL_VALUES))}")
+        elif install == "hermes" and ref == "none":
+            fail(errors, f"{where}: Install 'hermes' requires a pinned commit")
+        if not license_note:
+            fail(errors, f"{where}: license note is required")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", checked) and not (checked == "pending" and ref == "none"):
+            fail(errors, f"{where}: check date must be YYYY-MM-DD ('pending' only for a row without a pin)")
+
+    missing = PROVIDER_VENDORS - seen
+    if missing:
+        fail(errors, f"{PROVIDER_PINS_FILE}: pin table is missing vendors: {', '.join(sorted(missing))}")
+
 
 def validate_forbidden_files(errors: list[str]) -> None:
     for path in ROOT.rglob("*"):
@@ -287,12 +572,26 @@ def validate_forbidden_files(errors: list[str]) -> None:
             fail(errors, f"forbidden secret/state file: {relative.as_posix()}")
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--config",
+        default="config.yaml",
+        help="validate this file in place of the distribution's config.yaml (used by tests/check_mcp_fixtures.py)",
+    )
+    args = parser.parse_args(argv)
+    config_path = Path(args.config).resolve() if args.config != "config.yaml" else ROOT / "config.yaml"
+    try:
+        config_label = config_path.relative_to(ROOT).as_posix()
+    except ValueError:
+        config_label = str(config_path)
+
     errors: list[str] = []
     validate_required_files(errors)
-    validate_yaml_files(errors)
+    validate_yaml_files(errors, config_label)
     validate_json_files(errors)
     validate_skills(errors)
+    validate_provider_pins(errors)
     validate_forbidden_files(errors)
 
     if errors:
