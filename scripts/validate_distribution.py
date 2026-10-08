@@ -62,6 +62,9 @@ REQUIRED_FILES = (
     "tests/check_mcp_fixtures.py",
     "tests/fixtures/README.md",
     "tests/smoke.sh",
+    "tests/smoke_chat.py",
+    "tests/smoke_session.py",
+    "tests/check_smoke_regressions.py",
 )
 
 FORBIDDEN_REPORT = "docs/ad-remaker-fonctionnement-complet.md"
