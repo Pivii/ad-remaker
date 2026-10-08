@@ -1,6 +1,6 @@
 # Project instructions
 
-This private repository defines an installable Ad Remaker profile distribution for Hermes.
+This public repository defines an installable Ad Remaker profile distribution for Hermes.
 
 ## Current scope
 

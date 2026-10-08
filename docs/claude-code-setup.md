@@ -7,7 +7,7 @@ This page holds the Claude Code installation details that the root [README](../R
 The repository is its own one-plugin marketplace. Add it, then install the plugin:
 
 ```bash
-claude plugin marketplace add Pivii/ad-remaker          # the private repository, with your GitHub access
+claude plugin marketplace add Pivii/ad-remaker          # the public GitHub repository
 # or, from a local clone: claude plugin marketplace add /path/to/ad-remaker
 claude plugin install ad-remaker@ad-remaker
 claude plugin details ad-remaker@ad-remaker             # 6 Skills, 1 agent, 5 MCP servers

@@ -48,7 +48,7 @@ Information checked on October 8, 2026: [template](https://rerun.build/templates
 
 ## Install
 
-Details for each runtime: [Claude Code setup](docs/claude-code-setup.md), [Codex setup](docs/codex-setup.md), and [architecture](docs/architecture.md) for Hermes MCP servers. The repository is private; installing needs access to it.
+Details for each runtime: [Claude Code setup](docs/claude-code-setup.md), [Codex setup](docs/codex-setup.md), and [architecture](docs/architecture.md) for Hermes MCP servers.
 
 ### Claude Code
 
