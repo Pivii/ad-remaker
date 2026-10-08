@@ -13,6 +13,8 @@ These rules apply to every external provider, whatever the route (MCP tools, CLI
 2. Inspect the live tool list, model catalog, and input schema before choosing a model or building a request. Never guess fields, endpoint identifiers, or status URLs; use the handles the service returns.
 3. Treat model names, prices, counts, coverage, retention periods, and tool names from vendor documents, installed vendor Skills, and `docs/provenance/` as claims to verify against the live tools or current official documentation.
 
+4. Installing a vendor tool (a CLI, a package, or an installer such as `curl ... | sh`) requires the user's explicit approval of that exact command. Use only the install command recorded in the vendor's `providers` entry. Never run it in yolo mode or with approvals turned off; in that case, stop and give the user the command to run themselves. Hermes runtime approval flags piping remote content to a shell as dangerous, and that prompt must be answered by the user, not bypassed.
+
 ## 2. When nothing is connected
 
 If no provider is available for a stage, say so explicitly and switch to the free path: native tools, local processing, and free public sources. Never claim a capability that is not connected, such as private metrics, ROAS, or rendering.
