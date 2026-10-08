@@ -7,17 +7,28 @@
 
 # Ad Remaker
 
+Ad Remaker is an independent agent that finds competitor ads with public performance signals, deconstructs their creative mechanics, and adapts them to your brand's real product. It never copies an ad exactly, never invents claims, and never spends money or publishes anything without your explicit approval. The same files install as a Hermes profile, a Claude Code plugin, or a Codex plugin for CLI and Desktop.
+
 Inspired by the Recreate competitor ads agent from [Rerun](https://rerun.build/templates/recreate-competitor-ads-meta?via=aRLmG4). If you want the same agent without installing or configuring anything, use Rerun directly.
 
 This is an independent, unofficial adaptation. According to the maintainer, the marketing team (Théo) authorized an open-source release on October 8, 2026, provided attribution is included. These are affiliate links: the maintainer may earn a commission.
 
-Independent agent project specialized in analyzing and adapting effective advertising concepts. The same files install as a Hermes profile, a Claude Code plugin, or a Codex plugin for CLI and Desktop (see `docs/decisions/ADR-003-claude-code-plugin.md`).
+## How it works
 
-## Status
+The main workflow runs these stages in order. Steps marked **you approve** stop until you give an explicit yes.
 
-The repository was initialized from the operating report provided on October 7, 2026. That report documents the target architecture, business workflow, safeguards, proposed integrations, and their status at the time of observation. Historical availability statements in the report are not evidence of current tool or MCP availability.
+1. **Find** competitor ads with public performance signals, through a connected ad-intelligence tool or the free public ad libraries. Run length, variants, and visible engagement are signals, never proof of profitability; every statement is labeled fact, estimate, opinion, or unknown.
+2. **Deconstruct** the creative mechanics: hook, shot sequence, framing, pacing, on-screen text, voice, and music, with a cut list, frame sheets, and a transcript when the local tools are available. Anything the evidence does not establish is marked unknown.
+3. **Adapt** the mechanics to your real product: no exact copy, every competitor trace replaced (brand, logo, product, person, voice, music, captions, metadata), and only claims your brand files or sources support.
+4. **Cost estimate, you approve.** Before any paid generation the agent shows units, unit price, subtotal, a 20% retry margin, total, currency, and whether each price is verified or estimated. A paid batch starts only after you approve that exact batch.
+5. **Generate** with a generation tool you have connected. Without one, the agent stops at a remake pack and never claims a render.
+6. **Strict QC.** The remake is compared with the source shot by shot. It needs at least 8/10 for structural faithfulness, at least 7/10 for production quality, and zero competitor traces.
+7. **Deliver** every file, linked, with explicit choices such as approve, choose person A or B, request changes, or stop.
+8. **Optional Meta campaign draft, you approve.** After final approval, and only with an authenticated Meta tool, the agent creates the campaign paused and reads it back. Publication, activation, scheduling, and spend each need their own separate approval. Without a Meta tool you get a manual launch pack instead.
 
-Provider rules live in the local `provider-policy` Skill. Official vendor Skills are not bundled: each user installs only the vendors they pay for, at a pinned commit, with `scripts/install_provider_skills.sh` in Hermes, or with the commands under "Vendor Skills in Claude Code" (see `docs/decisions/ADR-002-provider-skill-layers.md`).
+**With no paid provider connected**, the agent follows its `free-fallback-mode` Skill: research in public ad libraries (Meta Ad Library, TikTok Creative Center, Google Ads Transparency Center, and others), local analysis scripts, and a seven-file remake pack (storyboard, script, paste-ready prompts, two casting options, editing and music brief, QC checklist, manual Meta launch pack). It says plainly what it cannot do on that path: no access to private spend, revenue, conversion, or ROAS data, no rendered images, video, voice, or music, and no Meta object created. Web research also needs a working browser or search tool in your runtime; when none works, the agent asks you for library links, files, or screenshots.
+
+The rules come from [`SOUL.md`](SOUL.md) and the Skills in [`skills/`](skills/). [`docs/architecture.md`](docs/architecture.md) explains how the layers fit together.
 
 ## Which version should you choose?
 
@@ -35,157 +46,92 @@ Information checked on October 8, 2026: [template](https://rerun.build/templates
 
 ## Install
 
-### Hermes
+Details for each runtime: [Claude Code setup](docs/claude-code-setup.md), [Codex setup](docs/codex-setup.md), and [architecture](docs/architecture.md) for Hermes MCP servers. The repository is private; installing needs access to it.
+
+### Claude Code
 
 ```bash
-hermes profile install /path/to/ad-remaker --yes
-hermes -p ad-remaker skills list
+claude plugin marketplace add Pivii/ad-remaker
+claude plugin install ad-remaker@ad-remaker
 ```
 
-Then set a model with `hermes -p ad-remaker model`. Vendor MCP servers ship disabled in `config.yaml`; `docs/architecture.md` explains how to enable the ones you pay for. Vendor Skills are optional: `scripts/install_provider_skills.sh pika`.
+The plugin adds the `ad-remaker` subagent, five Skills, and five vendor MCP servers that stay unauthenticated until you sign in. Sign in only to the vendors you pay for, and block the others; see [Claude Code setup](docs/claude-code-setup.md), which also covers the optional local FFmpeg tool and vendor Skills.
 
 ### Codex CLI and Desktop
-
-CLI and Desktop are both required targets for issue #22. Codex CLI `0.160.0` is verified. The installed Desktop application is bundle `com.openai.codex`, version `26.930.61225` (build `13520`), with bundled runtime `0.160.1`; headless runtime evidence is recorded in `tests/README.md`. Its actual Plugins Directory and composer flow still require verification before #22 is complete. IDE extension and cloud remain unverified. This plugin adds five Skills, with no bundled MCP servers; local analysis works without vendor accounts. It uses your configured Codex model access. The plugin is free (MIT); model allowance and optional external services depend on your plans.
-
-For an authenticated private Git installation:
 
 ```bash
 codex plugin marketplace add Pivii/ad-remaker --ref main
 codex plugin add ad-remaker@ad-remaker
-codex plugin list --marketplace ad-remaker --json
 ```
 
-For Desktop, the same marketplace registration is required so the plugin remains discoverable outside the package directory. The bundled Desktop backend accepts the existing compatibility catalog. After installation, restart or refresh the Desktop client, select the registered `ad-remaker` source in its Plugins Directory, and verify discovery/invocation in a new project outside this repo. This GUI flow remains a required open check, not a claimed pass. Users do not need to inspect application version as an installation step.
+The plugin adds five Skills and no MCP servers. Verified with Codex CLI `0.160.0` and, headlessly, with the runtime bundled in Codex Desktop `26.930.61225` (runtime `0.160.1`); the Desktop Plugins Directory and Skill selection in its interface are not verified yet. For a local clone, export a clean package first. See [Codex setup](docs/codex-setup.md) for the local export, update, uninstall, and optional vendors.
 
-Your Git client must already have access to the private repository. Use existing Git authentication rather than credentials embedded in a repository URL. No vendor login is needed. Codex retains installer-created `.git` metadata in its private Git plugin cache on the tested client; the clean local export below has no Git metadata. Ignored worktrees, credentials and user runtime data are excluded in both tests. For a local checkout, export a clean package first; do not install a live development clone, because Codex can copy ignored files into its cache:
+### Hermes
 
 ```bash
-python3 /path/to/ad-remaker/scripts/export_codex_package.py /path/outside/repo/ad-remaker-codex
-codex plugin marketplace add /path/outside/repo/ad-remaker-codex
-codex plugin add ad-remaker@ad-remaker
+hermes profile install /path/to/ad-remaker --yes
+hermes -p ad-remaker model
 ```
 
-The export destination must not exist. It includes every tracked Skill script/reference, including generated rules. Keep the exported marketplace directory for future installs. The script exports the tracked working-tree files, so release authors must validate and stage new files before exporting.
+The second command picks the model for the profile. Vendor MCP servers ship disabled in `config.yaml`; [architecture](docs/architecture.md) explains how to enable the ones you pay for. Vendor Skills are optional: `scripts/install_provider_skills.sh pika`.
 
-Start Codex from your own working project, outside the distribution checkout. Invoke the main workflow explicitly:
+## Usage
+
+### Start the agent
+
+| Runtime | Start | Then |
+|---|---|---|
+| Claude Code | `claude --agent ad-remaker:ad-remaker` | Type a prompt below. In a session that is already open, start the prompt with `@agent-ad-remaker:ad-remaker`, or call the workflow directly with `/ad-remaker:winning-ad-remake-workflow`. |
+| Codex | `codex`, from your own project folder | Start each prompt with `$ad-remaker:winning-ad-remake-workflow`, or `$ad-remaker:meta-ads-usage` for the Meta prompt. Type `$` to select a Skill in the client. |
+| Hermes | `hermes -p ad-remaker` | Type a prompt below. For a single answer without a session, run `hermes -p ad-remaker chat -q "<prompt>"`. |
+
+Run the agent from your own project folder, not from this repository. A one-shot run cannot answer the agent's approval questions, so use a session for anything beyond research and analysis.
+
+### Example prompts
+
+Replace the text in angle brackets. Each example says what the agent asks before it spends or publishes anything: those questions are expected behavior, not errors.
+
+**1. Free first run, no provider connected**
 
 ```text
-$ad-remaker:winning-ad-remake-workflow Analyze this competitor ad for my product. No vendors are connected. Prepare the free remake pack and state missing inputs/capabilities.
+Find winning ads for <category> in the public ad libraries and give me a deconstruction of the best one.
 ```
 
-The discovered selectors are `ad-remaker:winning-ad-remake-workflow`, `ad-remaker:free-fallback-mode`, `ad-remaker:provider-policy`, `ad-remaker:providers`, and `ad-remaker:meta-ads-usage`. Type `$` and select the Skill in the client. Each entrypoint first reads its generated agent rules and applicable sibling policies. Explicit invocation applies instructions to that task; it does not create a Hermes profile, a Claude subagent, or a global persona. Natural-language selection remains client/model-dependent.
+The agent reports which stages run on the free path and which tools are missing. If no browser or search tool works in your runtime, it asks you for library links or screenshots instead of inventing results. Nothing here costs money, so there is no approval step; spend, revenue, and ROAS stay marked unknown.
 
-To update a Git installation, refresh the tracked ref and reinstall:
+**2. Full remake for your brand**
 
-```bash
-codex plugin marketplace upgrade ad-remaker
-codex plugin remove ad-remaker@ad-remaker
-codex plugin add ad-remaker@ad-remaker
+```text
+Here is my product page <url>. Find 3 competitor ads with real performance signals and propose a remake adapted to my product. Estimate costs before generating anything.
 ```
 
-For a local marketplace, export the new validated version to a new directory, remove the plugin, remove the marketplace, add the new export path, and add the plugin again. `marketplace upgrade` does not support local paths. These commands update only this plugin/catalog; do not replace the user's config file or global instructions. Removal clears the plugin cache, so keep your working assets outside it.
+You get a labeled shortlist and a remake design. Before any paid generation, the agent shows the batch with units, prices, retry margin, total, and currency, and waits for you to approve that exact batch. With no generation tool connected, it delivers the remake pack and says that nothing was rendered.
 
-To uninstall:
+**3. Analyze an ad you already have**
 
-```bash
-codex plugin remove ad-remaker@ad-remaker
-codex plugin marketplace remove ad-remaker
+```text
+Deconstruct this ad (<file or link>): hook, structure, offer, visual mechanics, and what I can reuse without copying.
 ```
 
-#### Optional vendors in Codex
+The agent asks before downloading a public video or installing a missing local tool such as `ffmpeg` or `scenedetect`. What it cannot measure, such as spoken words without a transcriber, is marked unknown.
 
-The explicit empty MCP mapping in `.codex-plugin/plugin.json` takes precedence over Claude's `.mcp.json` on the tested CLI. Hermes `enabled: false` is not a Codex setting. The installed package itself starts zero vendor servers. Other plugins/user configuration may still provide tools: check the actual session before each task.
+**4. Give the agent your brand facts**
 
-To opt in, read `provider-policy` and the desired vendor's entry in `providers`, then add a disabled entry to your own Codex `config.toml`, preserving its other settings, for example:
+Keep your product facts in a folder you control, for example `local/brands/<brand>/` with `brand.md`, `products.md`, and `claims.md`. In Hermes, put it inside the installed profile folder (`hermes profile show ad-remaker` prints its path); `local/` is ignored by Git there. In Claude Code and Codex, put it in your own project folder, never inside the plugin cache. Then tell the agent where it is, with the full path if you started the agent from another folder:
 
-```toml
-[mcp_servers.pika]
-enabled = false
-url = "https://mcp.pika.me/api/mcp"
+```text
+Use only the brand facts in <brand folder> (brand.md, products.md, claims.md). Do not use any claim that is not supported there, and tell me what is missing before you propose a remake.
 ```
 
-Inspect it with `codex mcp get pika --json`. This parses configuration without starting a provider. `codex mcp add --url` can automatically begin OAuth discovery/login on this client; use it only when deliberately connecting, not as a model-free parsing check.
+The agent does not read this folder on its own; name it in your request. Claims, testimonials, and results that your files do not support are left out, not softened.
 
-Set `enabled = false` under `[mcp_servers.pika]` in your own Codex `config.toml` to stop it; set it true only when deliberately connecting. `codex mcp remove pika` removes it. The configuration parser is checked without a provider login or call. When you choose to authenticate, `codex mcp login pika` begins OAuth. OAuth, including Meta client-ID requirements, and real provider operation are unverified in Codex; consult the current official vendor docs before connecting. Do not reuse Claude's observed Meta client-ID behavior as evidence. See `docs/service-matrix.md` for dated endpoint sources.
+**5. Paused Meta campaign draft**
 
-Vendor Skills are separately installed, never automatic. Use the existing source/pin/license table in `providers`, retain the complete vendor bundle, and review it before installing with a Codex-compatible client. No vendor Skill installation command is advertised as verified in Codex here. `scripts/install_provider_skills.sh` is Hermes-only. The optional community ffmpeg-skill remains Claude Code-only; Codex uses our distributed local analysis scripts and reports missing dependencies/finishing capabilities.
-
-### Claude Code
-
-The repository is its own one-plugin marketplace. Add it, then install the plugin:
-
-```bash
-claude plugin marketplace add Pivii/ad-remaker          # the private repository, with your GitHub access
-# or, from a local clone: claude plugin marketplace add /path/to/ad-remaker
-claude plugin install ad-remaker@ad-remaker
-claude plugin details ad-remaker@ad-remaker             # 5 Skills, 1 agent, 5 MCP servers
+```text
+Prepare a paused Meta campaign draft for the approved creative.
 ```
 
-To try it for one session without installing, run `claude --plugin-dir /path/to/ad-remaker`.
-
-The plugin provides:
-
-- the `ad-remaker` subagent, whose prompt is `SOUL.md` (invoke it as `@agent-ad-remaker:ad-remaker`, or start a session with `claude --agent ad-remaker:ad-remaker`);
-- every Skill in `skills/`, namespaced as `ad-remaker:<skill>`;
-- the vendor MCP servers declared in `.mcp.json`, the same ones as `config.yaml`.
-
-#### Use only the vendors you pay for
-
-Claude Code has no `enabled: false` for a plugin's MCP servers: all five start when the plugin is enabled. Each one uses OAuth, so it stays unauthenticated and does nothing until you sign in with `claude mcp login plugin:ad-remaker:<name>` or from `/mcp`. Without a paid account, sign in to nothing: the agent follows `free-fallback-mode`.
-
-To stop Claude Code from connecting to a vendor you do not pay for, either turn the server off in `/mcp` (per project), or block it everywhere with `deniedMcpServers` in your own `~/.claude/settings.json`, one entry per vendor:
-
-```json
-{
-  "deniedMcpServers": [
-    { "serverUrl": "https://api.trendtrack.io/*" },
-    { "serverUrl": "https://mcp.higgsfield.ai/*" },
-    { "serverUrl": "https://mcp.fal.ai/*" }
-  ]
-}
-```
-
-A URL pattern also blocks the same vendor's server when another plugin declares it; `{ "serverName": "plugin:ad-remaker:fal" }` blocks only this plugin's entry. `meta_ads` has no app ID in `.mcp.json`, unlike Hermes: Claude Code does not expand variables in an OAuth client ID. In a test on October 8, 2026, Claude Code built Meta's authorization URL with a client ID of its own; completing the sign-in was not tested. The servers and their sources are listed in `docs/service-matrix.md`.
-
-#### Optional free local FFmpeg tool in Claude Code
-
-For analysis and finishing, Claude Code may use the community ffmpeg-skill separately from this plugin (ADR-004). It is optional: our local analysis scripts remain the distributed path. Do this in your working project, outside the Ad Remaker distribution, using the pinned commit from `skills/providers/SKILL.md`:
-
-```bash
-npx --yes skills add https://github.com/kajisho5/ffmpeg-skill/tree/008333aaf6722083392eb6bd8bd67b59884a2a26 --agent claude-code --skill ffmpeg-skill --yes
-python3 .claude/skills/ffmpeg-skill/scripts/_contract.py doctor
-```
-
-This exact install was verified in a scratch Claude Code project on 2026-10-08: the root Skill, scripts, references, and templates were copied into `.claude/skills/ffmpeg-skill/` (with a canonical copy in `.agents/skills/ffmpeg-skill/`). It does not change the Ad Remaker plugin or install an MCP server. Review the pinned community source before installing; do not run the installer automatically during an ad task. Add `-g` only if you deliberately want it available in every project. A reinstall must use the full pinned URL again.
-
-The scripts need Python 3.9 or later, `ffmpeg`, and `ffprobe`; each operation may require additional filters, encoders, fonts, or an already installed local transcription engine and cached model. `doctor` reports actual capabilities and may exit non-zero on a partially usable machine. On the test host, scenes and contact sheets worked with `--no-timecode`, while caption burning lacked the `subtitles` filter. Install dependencies or download models only with approval. Analysis and finishing routes, fallbacks, and output checks live in `free-fallback-mode` section 4. FFmpeg processing creates local files; it does not publish or generate a new ad from prompts.
-
-Hermes cannot install this pin in v0.20.2; `scripts/install_provider_skills.sh ffmpeg-skill` refuses it. Do not copy it into a Hermes profile or use `npx ffmpeg-skill` there. Re-check on a Hermes upgrade as ADR-004 requires. Test details are in `tests/README.md`.
-
-#### Vendor Skills in Claude Code
-
-Vendor Skills are optional and installed by reference, at the commit pinned in the pin table of `skills/providers/SKILL.md`. Never install one at its latest commit. For ffmpeg-skill use the exact root-Skill command above. For paid vendor Skills replace `<repository>`, `<pinned ref>`, and `<skill path>` with the values of the vendor's row; rows whose `Pinned ref` is `none` (Kie.ai, TrendTrack, Brandsearch, Meta Ads) have nothing to install.
-
-```bash
-npx skills add https://github.com/<repository>/tree/<pinned ref>/<skill path> --agent claude-code
-```
-
-This installs into the current project's `.claude/skills/` and records the commit in `skills-lock.json`; add `-g` to install for every project.
-
-Pika and Higgsfield also publish a Claude Code plugin marketplace in the same repository, which installs all of their Skills at once. `claude plugin marketplace add owner/repo#ref` accepts a branch or tag but not a commit, so add the marketplace from a clone checked out at the pinned commit:
-
-```bash
-git clone https://github.com/Pika-Labs/Pika-Plugins.git ~/vendor/Pika-Plugins
-git -C ~/vendor/Pika-Plugins checkout --detach <pinned ref>
-claude plugin marketplace add ~/vendor/Pika-Plugins && claude plugin install pika@pika-plugins
-# Higgsfield: clone https://github.com/higgsfield-ai/skills.git the same way, then
-# claude plugin marketplace add <clone> && claude plugin install higgsfield@higgsfield
-```
-
-Keep the clone: Claude Code loads a marketplace added from a local path in place. To move to a new pin, check out the new commit after updating the pin table.
-
-Pika's plugin declares its own `pika` MCP server with the same URL as this plugin's; with both plugins installed, Claude Code 2.1.288 listed only one `pika` server. Higgsfield's and fal.ai's Skills tell the agent to install their CLI with `curl ... | sh`. The Hermes skills guard blocks them (ADR-002); Claude Code has no such guard, so `provider-policy` applies: the user approves that exact command, or runs it themselves.
+The agent reads its Meta rules first. With an authenticated Meta tool, it confirms the ad account, Page, objects, names, and budget with you before creating anything, creates every object paused, and reads each one back. Without a Meta tool, it gives you a manual launch pack for Ads Manager. Activation, scheduling, and any spend each need a separate, explicit approval.
 
 ## Established principles
 
@@ -196,42 +142,10 @@ Pika's plugin declares its own `pika` MCP server with the same URL as this plugi
 - Remove every identifiable competitor trace from the final deliverable.
 - Verify deliverables before reporting success.
 
-## Repository structure
+## Contributing
 
-- `distribution.yaml`: profile-distribution manifest.
-- `SOUL.md`: stable identity and non-negotiable safeguards.
-- `config.yaml`: credential-free Hermes defaults, including the official vendor MCP servers under `mcp_servers`. Every server ships disabled; see `docs/architecture.md` to enable one.
-- `cron/jobs.json`: distributed scheduled jobs. It is currently empty.
-- `.claude-plugin/`: Claude Code plugin manifest (`plugin.json`, version kept equal to `distribution.yaml`) and the one-plugin marketplace (`marketplace.json`).
-- `agents/ad-remaker.md`: Claude Code subagent. Its body is generated from `SOUL.md` by `scripts/sync_claude_agent.py`.
-- `.mcp.json`: the vendor MCP servers for Claude Code, the same set as `config.yaml`.
-- `skills/`: the business workflow, the shared provider policy, and the `providers` routing directory with its vendor pin table.
-- `docs/ad-remaker-complete-operating-report.md`: complete historical source report, translated into English.
-- `docs/architecture.md`: distribution layering and ownership boundaries.
-- `docs/service-matrix.md`: integration readiness states without unsupported availability claims.
-- `docs/provenance/`: verbatim vendor source texts kept for provenance.
-- `docs/decisions/`: architecture decisions.
-- `docs/brand/`: logo files, the logo brief with its usage rules, and the showcase page design handoff.
-- `scripts/validate_distribution.py`: local structural and safety validator, for all three runtime packages.
-- `scripts/sync_claude_agent.py`: regenerates the subagent body from `SOUL.md`.
-- `.codex-plugin/plugin.json`: Codex Skills manifest, explicitly no bundled MCP servers.
-- `scripts/sync_skill_rules.py`: generates each Skill-local rule reference from `SOUL.md`.
-- `scripts/export_codex_package.py`: exports a clean local Codex marketplace.
-- `scripts/install_provider_skills.sh`: installs pinned official vendor Skills into the profile, then runs `hermes skills audit`.
-- `tests/`: acceptance guidance and redistributable fixtures.
-
-## Validation
-
-Run from any directory:
-
-```bash
-python3 /path/to/ad-remaker/scripts/validate_distribution.py
-```
+Contributions are welcome: new free research sources, provider integrations, Skill improvements, docs, and bug reports from real runs. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the setup, the checks to run before a pull request, and the repository rules.
 
 ## License
 
 [MIT](LICENSE), copyright 2026 Pivi Solutions. External vendor source material retained for provenance and separately installed vendor Skills remain subject to their own terms; this license does not relicense them.
-
-## Report source
-
-[Ad Remaker report](https://sucqmcejnrnvcdnrwhld.supabase.co/storage/v1/object/public/published/3695/ad-remaker-fonctionnement/ad-remaker-fonctionnement-complet.md?v=1791399468681)
